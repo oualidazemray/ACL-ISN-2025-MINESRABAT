@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="aclisn2025minesrabat.lo3ba.Lo3baController">
+    <children>
+        <Canvas fx:id="gameCanvas" width="400" height="400" layoutX="50" layoutY="50"/>
+    </children>
+</AnchorPane>
