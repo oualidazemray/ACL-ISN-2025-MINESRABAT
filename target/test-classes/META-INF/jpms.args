@@ -1,0 +1,4 @@
+--patch-module
+aclisn2025minesrabat.lo3ba=_
+--add-reads
+aclisn2025minesrabat.lo3ba=ALL-UNNAMED
