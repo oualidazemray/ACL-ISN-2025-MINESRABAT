@@ -1,0 +1,119 @@
+.root {
+  -fx-background-image: url("images/background.jpg");
+  -fx-background-repeat: no-repeat;
+  -fx-background-size: cover;
+  -fx-background-position: center center;
+  -fx-font-family: "Press Start 2P", "VT323", monospace;
+}
+
+/* HUD bar with medieval wood tone */
+.hud-bar {
+  -fx-background-color: rgba(139, 69, 19, 0.9); /* dark brown */
+  -fx-padding: 8;
+  -fx-spacing: 20;
+  -fx-alignment: center;
+  -fx-border-color: #ffd700; /* golden border */
+  -fx-border-width: 2;
+}
+
+/* HUD text styled like old RPG counters */
+.hud-text {
+  -fx-text-fill: #ffffff;
+  -fx-font-size: 14px;
+  -fx-effect: dropshadow(gaussian, black, 3, 0.7, 0, 0);
+}
+
+/* Retro pixel buttons with gold + brown scheme */
+.retro-button {
+  -fx-background-color: #5c2e0e; /* dark brown */
+  -fx-text-fill: #ffd700;
+  -fx-font-size: 14px;
+  -fx-font-weight: bold;
+  -fx-border-color: #ffd700;
+  -fx-border-width: 3;
+  -fx-border-radius: 0;
+  -fx-background-radius: 0;
+  -fx-padding: 10 20;
+  -fx-cursor: hand;
+}
+
+.retro-button:hover {
+  -fx-background-color: #ffd700;
+  -fx-text-fill: #5c2e0e;
+}
+
+/* Game area transparent overlay */
+.retro-container {
+  -fx-padding: 0;
+  -fx-background-color: rgba(0, 0, 0, 0.3); /* subtle dark overlay */
+}
+
+.retro-game {
+  -fx-background-color: transparent;
+}
+
+/* Game title medieval golden glow */
+.game-title {
+  -fx-text-fill: #ffd700;
+  -fx-font-size: 64px;
+  -fx-font-weight: bold;
+  -fx-effect: dropshadow(gaussian, #8b0000, 25, 0.8, 0, 0);
+}
+
+.game-subtitle {
+  -fx-text-fill: #f5deb3; /* wheat color */
+  -fx-font-size: 18px;
+  -fx-font-style: italic;
+}
+
+/* Menu buttons with wood+gold look */
+.menu-button {
+  -fx-background-color: #8b4513; /* wood brown */
+  -fx-text-fill: #ffd700;
+  -fx-font-size: 16px;
+  -fx-font-weight: bold;
+  -fx-border-color: #ffd700;
+  -fx-border-width: 3;
+  -fx-border-radius: 0;
+  -fx-background-radius: 0;
+  -fx-padding: 12 24;
+  -fx-cursor: hand;
+}
+
+.menu-button:hover {
+  -fx-background-color: #ffd700;
+  -fx-text-fill: #8b4513;
+}
+
+/* Instructions text - faded retro gray */
+.instructions {
+  -fx-text-fill: #dddddd;
+  -fx-font-size: 12px;
+}
+
+/* Retro title for headers */
+.retro-title {
+  -fx-text-fill: #ffd700;
+  -fx-font-size: 28px;
+  -fx-font-weight: bold;
+  -fx-effect: dropshadow(gaussian, #8b0000, 12, 0.6, 0, 0);
+}
+
+/* Grid level buttons (stone-like look) */
+.level-button {
+  -fx-background-color: #5c4033; /* dark stone brown */
+  -fx-text-fill: #f5deb3; /* wheat */
+  -fx-font-size: 14px;
+  -fx-font-weight: bold;
+  -fx-border-color: #ffd700;
+  -fx-border-width: 2;
+  -fx-border-radius: 0;
+  -fx-background-radius: 0;
+  -fx-pref-width: 80;
+  -fx-pref-height: 60;
+}
+
+.level-button:hover {
+  -fx-background-color: #ffd700;
+  -fx-text-fill: #5c2e0e;
+}
