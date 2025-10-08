@@ -22,7 +22,6 @@ Before running the project, make sure you have the following installed:
 Clone the repository:
 
 git clone https://github.com/oualidazemray/ACL-ISN-2025-MINESRABAT.git
-cd LO3BA
 
 ## 🛠 Installation & Compilation
 mvn clean install
