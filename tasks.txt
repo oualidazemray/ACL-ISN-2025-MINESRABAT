@@ -1,0 +1,25 @@
+######################################################################################################################################
+#LO3BA (Sprint 1)
+#Répartition des tâches de notre équipe WyWy :
+
+THEEEE Teaaaaam :
+1 BENSAADOUNE Yassine a développé la logique du jeu (GameController)
+2 AZEMRAY Oualid a conçu le menu principal (MainMenuController et main-menu.fxml) et géré la navigation entre les écrans
+3 EL-KSIR Yassine est chargée du design et du style visuel (retro.css)
+4 ZARADA Wadie a réalisé le diagramme de classes et participé à la documentation et au suivi du backlog
+
+
+
+SPRINT1:
+Le héros peut se déplacer (an avant en arriere avec les touches -> et <-), sauter avec espace et atteindre la porte.
+Le menu principal avec un start permet de lancer le jeu.
+Le design et les images sont en cours d’intégration
+
+
+A venir :
+On a oublié un détail c est l'explication du jeux au début (comment sauter par exemple et le principe du jeu ), on aimerai bien faire un tuto
+Ajout du système de score et de vies.
+Création de plusieurs niveaux avec difficulté progressive.
+Ajout d’obstacles et d’ennemis.
+Ajout de sons et musique de fond addapté à la difficulté du jeu.
+Amélioration du design et des animations.
