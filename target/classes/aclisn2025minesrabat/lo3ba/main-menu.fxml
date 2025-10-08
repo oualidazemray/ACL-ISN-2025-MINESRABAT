@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns="http://javafx.com/javafx/17"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="aclisn2025minesrabat.lo3ba.controller.MainMenuController"
+           stylesheets="@retro.css"
+           styleClass="retro-container">
+
+    <VBox alignment="CENTER" spacing="30">
+        <padding>
+            <Insets top="50" right="50" bottom="50" left="50"/>
+        </padding>
+
+        <!-- Game Title -->
+        <Text text="LO3BA" styleClass="game-title"/>
+
+        <!-- Subtitle -->
+        <Text text="L'Aventure du Dinosaure" styleClass="game-subtitle"/>
+
+        <!-- Spacer -->
+        <Region minHeight="30"/>
+
+        <!-- Menu Buttons -->
+        <VBox alignment="CENTER" spacing="15">
+            <Button fx:id="startButton"
+                    text="START GAME"
+                    onAction="#handleStartGame"
+                    prefWidth="250"
+                    prefHeight="50"
+                    styleClass="menu-button"/>
+
+            <Button fx:id="exitButton"
+                    text="EXIT"
+                    onAction="#handleExit"
+                    prefWidth="250"
+                    prefHeight="50"
+                    styleClass="menu-button"/>
+        </VBox>
+
+        <!-- Bottom Info Text -->
+        <Region VBox.vgrow="ALWAYS"/>
+        <Text text="Utilise ← → pour bouger et ESPACE pour sauter"
+              styleClass="instructions"/>
+    </VBox>
+</StackPane>
