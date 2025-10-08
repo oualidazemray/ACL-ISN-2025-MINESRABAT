@@ -2,21 +2,15 @@
 
 ### Objectifs
 
-- Création du joueur (sprite dinosaure).
-- Gestion du déplacement horizontal et du saut.
-- Détection du sol et des collisions simples.
-- Intégration de la zone de jeu dynamique (Pane).
+Système de vies et de score.
+Obstacles dynamiques : Ajout d’obstacles en mouvement - Le joueur doit synchroniser ses mouvements pour les éviter
+Deuxième niveau (Level 2): des obstacles supplémentaires et des plateformes de différentes hauteurs
+bonus à collecter : Ajout d’objets spéciaux à ramasser et permet de allonger la durée (un bonus equivalent à 1s de plus)
+Effets visuels adapté à la difficulté du niveau.
+un compteur à rebours
+monstre detecte la position, se deplace vers l hero et s il le touche il perd une vie des 3
 
----
 
-### Réalisé
-
-- Ajout du joueur dans `game-screen.fxml`.
-- Gestion des touches de direction et saut.
-- Mise à jour du `GameController` pour gérer le mouvement.
-- Première ébauche de la boucle d’animation du jeu.
-
----
 
 ### UML et conception
 
@@ -29,41 +23,11 @@
 
 | Membre   | Tâches                                    |
 | -------- | ----------------------------------------- |
-| Membre 1 | Classe `Player` et gestion des mouvements |
-| Membre 2 | `GameController` (boucle d’animation)     |
-| Membre 3 | Collisions et tests                       |
-| Membre 4 | UML et documentation                      |
+| Y 1      | Classe `Player` et gestion des mouvements |
+| Y 2      | `GameController` (boucle d’animation)     |
+| W 1      | Collisions et tests                       |
+| w 2      | UML et documentation                      |
 
----
-
-### Tag Git
-
-**v2.0** – Version avec personnage jouable.
-
----
-
-### Préparation du sprint suivant
-
-- Ajout des obstacles et des pièces.
-- Mise en place du score et de la vie.
-- Introduction d’un système de niveaux.
-- Amélioration du visuel (HUD rétro).
-
----
-
-### Rétrospective
-
-**Ce qui a bien fonctionné :**
-
-- L’équipe a réussi à intégrer un personnage jouable et un contrôle fluide.
-- La communication entre les membres s’est améliorée.
-- La structure du code (MVC + JavaFX) est restée claire.
-
-**Ce qui peut être amélioré :**
-
-- Mieux organiser la gestion des collisions et la gravité.
-- Mieux planifier les tâches pour éviter le travail en doublon.
-- Ajouter des tests unitaires basiques pour les futures entités.
 
 **Actions pour le prochain sprint :**
 
