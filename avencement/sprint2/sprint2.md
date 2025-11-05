@@ -46,7 +46,7 @@ avec gestion des **collisions**, **sons**, et **ressources graphiques**.
 | -------------- | ---------------------------------------------------------------------- |
 | **Yassine 1**  | Migration du moteur graphique vers Swing (`GameUI`, `GameLoop`)        |
 | **Yassine 2**  | Écran de sélection de niveau (`LevelSelectScreen`) et design visuel    |
-| **Oualid**     | Création des entités `Platform`, `Spike`, `Door` et gestion collisions |
+| **Oualid**     | Création des  `lvl `, `lvl 1` .. `lvl 10` et gestion collisions |
 | **Wadie**      | UML, intégration des ressources (sons, images, polices, JSON) et tests |
 
 ---
