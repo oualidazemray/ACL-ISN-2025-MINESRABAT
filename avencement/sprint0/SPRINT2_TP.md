@@ -1,6 +1,6 @@
 # 🎮 Projet LO3BA
 
-### (ACL-ISN 2025 – École Nationale Supérieure des Mines de Rabat)
+### (ACL-ISN 2025 –ENSEM)
 
 ---
 
