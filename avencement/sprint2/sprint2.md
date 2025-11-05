@@ -1,36 +1,82 @@
-## Sprint 2 – Personnage et déplacement
+# 🎮 Projet LO3BA
 
-### Objectifs
-
-Système de vies et de score.
-Obstacles dynamiques : Ajout d’obstacles en mouvement - Le joueur doit synchroniser ses mouvements pour les éviter
-Deuxième niveau (Level 2): des obstacles supplémentaires et des plateformes de différentes hauteurs
-bonus à collecter : Ajout d’objets spéciaux à ramasser et permet de allonger la durée (un bonus equivalent à 1s de plus)
-Effets visuels adapté à la difficulté du niveau.
-un compteur à rebours
-monstre detecte la position, se deplace vers l hero et s il le touche il perd une vie des 3
-
-
-
-### UML et conception
-
-- Nouvelles classes : `Player`, `GameLoop`.
-- Mise à jour du diagramme UML : relation `GameController → Player`.
+### (ACL-ISN 2025 – École Nationale Supérieure des Mines de Rabat)
 
 ---
 
-### Répartition
+## 🏁 Sprint 1 – Séance de TP 2
 
-| Membre   | Tâches                                    |
-| -------- | ----------------------------------------- |
-| Y 1      | Classe `Player` et gestion des mouvements |
-| Y 2      | `GameController` (boucle d’animation)     |
-| W 1      | Collisions et tests                       |
-| w 2      | UML et documentation                      |
+### 🎯 Objectif du sprint
 
+Développer la **première version jouable** du jeu :
 
-**Actions pour le prochain sprint :**
+- ajout du **personnage principal** ;
+- gestion du **déplacement et gravité** ;
+- **système de niveaux** basique.
 
-- Documenter le fonctionnement du `GameLoop`.
-- Introduire une classe `Entity` abstraite pour préparer les obstacles et objets.
-- Mettre en place un système de score et un affichage dynamique (HUD).
+---
+
+## 📋 Contenu à rendre
+
+### 📅 À la fin de la séance de TP
+
+- ✅ Backlog du sprint 1
+- 🧩 Conception UML
+- 👥 Répartition des tâches
+
+### ⏰ À 18h, la veille de la séance du sprint 2
+
+- 🏷️ Code tagué `V-1` disponible
+- 🔍 Sprint Review
+- 💭 Sprint Retrospective
+- 🧾 Préparation du sprint 2
+
+---
+
+## 🧱 Backlog Sprint 1
+
+| ID  | En tant que… | Je veux…                                                | Afin de…                            | Priorité |
+| --- | ------------ | ------------------------------------------------------- | ----------------------------------- | -------- |
+| US1 | Joueur       | Contrôler le dinosaure avec ← → et ^                    | Me déplacer dans le niveau          | Haute    |
+| US2 | Joueur       | Voir un sol et des plateformes                          | Évoluer dans un environnement clair | Haute    |
+| US4 | Développeur  | Mettre à jour l’UML (Player, Entity, Level)             | Structurer le code                  | Moyenne  |
+| US5 | Développeur  | Ajouter une boucle de jeu (rafraîchissement du rendu)   | Gérer animations / mouvements       | Moyenne  |
+| US7 | Joueur       | Passer d’un niveau à un autre après un objectif atteint | Découvrir une progression de jeu    | Haute    |
+
+---
+
+## 👥 Répartition des tâches
+
+| Membre        | Tâches principales                                |
+| ------------- | ------------------------------------------------- |
+| **Yassine 1** | Classe `Player` (déplacement, saut, gravité)      |
+| **Oualid**    | `GameLoop` et gestion du rafraîchissement         |
+| **Yassine 2** | Création de la scène du jeu et intégration du HUD |
+| **Wadie**     | UML et documentation du code                      |
+
+---
+
+## 🔍 Sprint Review
+
+- ✅ Personnage jouable avec déplacements et saut
+- ✅ Environnement de base (plateformes, sol)
+- ✅ Boucle de jeu fluide
+- ⚙️ Transition de niveau partiellement fonctionnelle
+
+---
+
+## 💭 Sprint Retrospective
+
+| Ce qui a bien fonctionné 👍 | Ce qui doit être amélioré ⚠️ | Actions pour le prochain sprint 🚀 |
+| --------------------------- | ---------------------------- | ---------------------------------- |
+| Gameplay fonctionnel        | Gravité instable parfois     | Revoir la physique et collisions   |
+| UML cohérent                | Rendu limité avec JavaFX     | Étudier une migration vers Swing   |
+
+---
+
+## 🧾 Préparation du Sprint 2
+
+- 🎯 **Objectif :** Migrer le projet vers **Swing** pour améliorer le rendu.
+- 🧩 **UML :** Adapter les classes `GameUI`, `GameLoop`, `LevelManager`.
+- 🧠 **Contenu :** Intégration des obstacles (`Platform`, `Spike`, `Door`).
+- 🏷️ **Tag Git attendu :** `V-2`

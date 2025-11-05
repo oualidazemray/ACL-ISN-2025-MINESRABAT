@@ -24,6 +24,7 @@ A challenging 2D platformer game inspired by Devil Evil 2, featuring precise pla
 
 ```bash
 mvn clean compile
+java -cp target/classes com.lo3ba.Main
 ```
 
 ### Run
@@ -83,6 +84,7 @@ src/main/java/com/lo3ba/
     └── ... (Level3-10)
 ```
 
-## Credits
-
-Created as a tribute to Devil Evil 2's challenging platformer gameplay.
+```bash pour MacBook
+mvn clean compile
+java -cp target/classes com.lo3ba.Main
+```
