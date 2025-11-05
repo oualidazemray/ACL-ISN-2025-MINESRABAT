@@ -15,7 +15,7 @@ public class LevelManager {
     private Clip doorSound;
     
     public LevelManager(Player player) {
-        this(player, 1); // Default to level 1
+        this(player, 1); 
     }
     
     public LevelManager(Player player, int startLevel) {
