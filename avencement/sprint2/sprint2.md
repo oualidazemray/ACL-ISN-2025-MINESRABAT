@@ -89,7 +89,11 @@ avec gestion des **collisions**, **sons**, et **ressources graphiques**.
 
 - 🎯 **Objectif :** Ajouter les **écrans de fin (Game Over / Victory)**, les **ennemis**, et un **système de score**.  
 - 🧩 **UML :** Nouvelles classes `Enemy`, `GameOverScreen`, `VictoryScreen`, `HUD`.  
-- 👥 **Organisation :** Amélioration du système de collisions et de la boucle de jeu.  
+- 👥 **Organisation :** Amélioration du système de collisions et de la boucle de jeu.
+- Nous allons rajouter une classe Ennemy qui va suivre notre joueur
+- Nouveaux objets à collecter
+- Thèmes par niveau
+-  Mode speedrun
 - 🏷️ **Tag Git attendu :** `V-3`
 
 
