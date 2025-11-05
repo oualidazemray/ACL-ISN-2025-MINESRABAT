@@ -78,11 +78,8 @@ avec gestion des **collisions**, **sons**, et **ressources graphiques**.
 
 ## 🧾 Préparation du Sprint 3
 
-- 🎯 **Objectif :** Ajouter les **écrans de fin (Game Over / Victory)**, les **ennemis**, et un **système de score**.  
-- 🧩 **UML :** Nouvelles classes `Enemy`, `GameOverScreen`, `VictoryScreen`, `HUD`.  
-- 👥 **Organisation :** Amélioration du système de collisions et de la boucle de jeu.  
+- 🎯 **Objectif :** Ajouter les **écrans de fin (Game Over / Victory)**, les **ennemis**, et un **système de score**.
 - 🏷️ **Tag Git attendu :** `V-3`
 
 
-## 🗂️ Structure du projet
 
