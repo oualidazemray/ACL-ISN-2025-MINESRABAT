@@ -8,19 +8,20 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.IOException; // Added for ImageIO error handling
+import java.io.IOException;
 import java.io.InputStream;
-import javax.imageio.ImageIO; // Added for direct image loading
+import javax.imageio.ImageIO; 
 
-public class GameLoop extends JPanel implements Runnable {
-    // Base game resolution (internal rendering resolution)
+public class GameLoop extends JPanel {
     public static final int BASE_WIDTH = 800;
     public static final int BASE_HEIGHT = 600;
     private static final int FPS = 60;
+    private static final int FRAME_DELAY = 1000 / FPS; // ~16ms
 
-    private Thread gameThread;
-    private boolean running = false;
+    private Timer gameTimer;
 
     private Player player;
     private LevelManager levelManager;
@@ -30,15 +31,12 @@ public class GameLoop extends JPanel implements Runnable {
     private BufferedImage backgroundImg;
     private Font retroFont;
 
-    // Scaling factors (for rendering only)
     private double scaleX = 1.0;
     private double scaleY = 1.0;
     
-    // Callbacks
     private Runnable onLevelComplete;
     private Runnable onReturnToMenu;
 
-    // For backwards compatibility
     public GameLoop() {
         this(1, null, null);
     }
@@ -56,6 +54,7 @@ public class GameLoop extends JPanel implements Runnable {
         init(startLevel);
         setupUI();
         setupResizeListener();
+        setupTimer();
     }
 
     private void setupResizeListener() {
@@ -116,7 +115,7 @@ public class GameLoop extends JPanel implements Runnable {
             }
         });
 
-        // FIX: Directly load background image using the full resource path
+        // Load background image
         try {
             backgroundImg = ImageIO.read(getClass().getClassLoader().getResourceAsStream("assets/textures/background.png"));
         } catch (IOException e) {
@@ -147,47 +146,25 @@ public class GameLoop extends JPanel implements Runnable {
         });
     }
 
-    public void start() {
-        if (running) return;
-        running = true;
-        gameThread = new Thread(this);
-        gameThread.start();
+    private void setupTimer() {
+        gameTimer = new Timer(FRAME_DELAY, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                update();
+                repaint();
+            }
+        });
     }
 
-    public void stop() {
-        running = false;
-        try {
-            if (gameThread != null) {
-                gameThread.join(1000);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    public void start() {
+        if (!gameTimer.isRunning()) {
+            gameTimer.start();
         }
     }
 
-    @Override
-    public void run() {
-        long lastTime = System.nanoTime();
-        double nsPerTick = 1000000000.0 / FPS;
-        double delta = 0;
-
-        while (running) {
-            long now = System.nanoTime();
-            delta += (now - lastTime) / nsPerTick;
-            lastTime = now;
-
-            while (delta >= 1) {
-                update();
-                delta--;
-            }
-
-            repaint();
-
-            try {
-                Thread.sleep(2);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+    public void stop() {
+        if (gameTimer != null && gameTimer.isRunning()) {
+            gameTimer.stop();
         }
     }
 
@@ -202,12 +179,15 @@ public class GameLoop extends JPanel implements Runnable {
                 if (onLevelComplete != null) {
                     onLevelComplete.run();
                 }
-                // Small delay before next level
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                // Small delay before next level using Timer
+                Timer delayTimer = new Timer(500, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        ((Timer)e.getSource()).stop();
+                    }
+                });
+                delayTimer.setRepeats(false);
+                delayTimer.start();
             }
         } else {
             gameUI.show();
@@ -249,7 +229,7 @@ public class GameLoop extends JPanel implements Runnable {
 
         player.render(g2d);
 
-        // Draw UI with retro font (This is the official UI drawing location)
+        // Draw UI with retro font
         g2d.setFont(retroFont);
         
         // Level indicator with shadow
