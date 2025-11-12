@@ -2,17 +2,22 @@ package com.lo3ba.ui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.*;
 import java.io.InputStream;
 
 public class GameUI {
     private JButton replayButton;
     private JButton quitButton;
+    private JButton homeButton;
     private OnButtonClickListener listener;
     private JPanel parent;
 
     public interface OnButtonClickListener {
-        void onReplay();
+        void onRepeat();
         void onQuit();
+        void onHome();
     }
 
     public GameUI(JPanel parent, int width, int height, OnButtonClickListener listener) {
@@ -22,126 +27,129 @@ public class GameUI {
     }
 
     private void createButtons(JPanel parent, int width, int height) {
-        replayButton = createRetroButton("REPLAY");
-        quitButton = createRetroButton("QUIT");
+        replayButton = createModernButton("↻ REPEAT", new Color(33, 150, 243), new Color(25, 118, 210));
+        homeButton = createModernButton("⌂ HOME", new Color(255, 152, 0), new Color(245, 124, 0));
+        quitButton = createModernButton("✕ QUIT", new Color(244, 67, 54), new Color(211, 47, 47));
 
         positionButtons(width, height);
 
         // Button actions
         replayButton.addActionListener(e -> {
-            if (listener != null) listener.onReplay();
+            if (listener != null) listener.onRepeat();
         });
 
         quitButton.addActionListener(e -> {
             if (listener != null) listener.onQuit();
         });
 
+        homeButton.addActionListener(e -> {
+            if (listener != null) listener.onHome();
+        });
+
         // Initially hidden
         replayButton.setVisible(false);
         quitButton.setVisible(false);
+        homeButton.setVisible(false);
 
         // Add to parent
         parent.add(replayButton);
         parent.add(quitButton);
+        parent.add(homeButton);
     }
 
     private void positionButtons(int width, int height) {
-        int buttonWidth = 250;
-        int buttonHeight = 70;
+        int buttonWidth = 200;
+        int buttonHeight = 60;
+        int spacing = 15;
         int centerX = width / 2 - buttonWidth / 2;
+        int startY = height / 2 + 30;
 
-        replayButton.setBounds(centerX, height / 2 + 50, buttonWidth, buttonHeight);
-        quitButton.setBounds(centerX, height / 2 + 130, buttonWidth, buttonHeight);
+        replayButton.setBounds(centerX, startY, buttonWidth, buttonHeight);
+        homeButton.setBounds(centerX, startY + buttonHeight + spacing, buttonWidth, buttonHeight);
+        quitButton.setBounds(centerX, startY + (buttonHeight + spacing) * 2, buttonWidth, buttonHeight);
     }
 
     public void updatePositions(int width, int height) {
         positionButtons(width, height);
     }
 
-    private JButton createRetroButton(String text) {
+    private JButton createModernButton(String text, Color baseColor, Color hoverColor) {
         JButton button = new JButton(text) {
+            private boolean isHovered = false;
+
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
-                
-                // Anti-aliasing OFF for pixel-perfect look
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-                                    RenderingHints.VALUE_ANTIALIAS_OFF);
-                g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, 
-                                    RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-                
-                // Draw background with gradient
-                if (getModel().isRollover()) {
-                    // Hover state - bright red/orange gradient
-                    GradientPaint gp = new GradientPaint(
-                        0, 0, new Color(255, 50, 0),
-                        0, getHeight(), new Color(200, 0, 0)
-                    );
-                    g2d.setPaint(gp);
-                } else {
-                    // Normal state - black background
-                    g2d.setColor(Color.BLACK);
-                }
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-                
-                // Draw pixelated border (thick)
-                if (getModel().isRollover()) {
-                    g2d.setColor(new Color(255, 255, 0)); // Yellow border on hover
-                } else {
-                    g2d.setColor(new Color(255, 100, 0)); // Orange border
-                }
-                
-                // Outer border (thick pixel style)
-                for (int i = 0; i < 5; i++) {
-                    g2d.drawRect(i, i, getWidth() - 1 - (i * 2), getHeight() - 1 - (i * 2));
-                }
-                
-                // Draw text with gradient effect
-                g2d.setFont(getFont());
-                FontMetrics fm = g2d.getFontMetrics();
-                int textWidth = fm.stringWidth(getText());
-                int textHeight = fm.getAscent();
-                int x = (getWidth() - textWidth) / 2;
-                int y = (getHeight() + textHeight) / 2 - 4;
-                
-                if (getModel().isRollover()) {
-                    // Hover text - bright yellow
-                    g2d.setColor(new Color(255, 255, 100));
-                } else {
-                    // Normal text - gradient from orange to yellow
-                    GradientPaint textGp = new GradientPaint(
-                        x, y - textHeight, new Color(255, 200, 0),
-                        x, y, new Color(255, 100, 0)
-                    );
-                    g2d.setPaint(textGp);
-                }
-                
-                g2d.drawString(getText(), x, y);
-                
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+                int w = getWidth();
+                int h = getHeight();
+
+                // Shadow
+                g2d.setColor(new Color(0, 0, 0, 120));
+                g2d.fillRoundRect(3, 3, w - 6, h - 6, 20, 20);
+
+                // Use hover color if hovered, base color otherwise
+                Boolean hovered = (Boolean) getClientProperty("isHovered");
+                boolean isHovered = hovered != null && hovered;
+                Color currentTop = isHovered ? hoverColor.brighter() : baseColor;
+                Color currentBottom = isHovered ? hoverColor : baseColor.darker();
+
+                // Button background with gradient
+                GradientPaint gradient = new GradientPaint(0, 0, currentTop, 0, h, currentBottom);
+                g2d.setPaint(gradient);
+                g2d.fillRoundRect(0, 0, w, h, 20, 20);
+
+                // Shine effect
+                g2d.setColor(new Color(255, 255, 255, isHovered ? 60 : 40));
+                g2d.fillRoundRect(5, 5, w - 10, h / 3, 15, 15);
+
+                // Border
+                g2d.setColor(new Color(255, 255, 255, isHovered ? 200 : 120));
+                g2d.setStroke(new BasicStroke(2.5f));
+                g2d.drawRoundRect(1, 1, w - 2, h - 2, 20, 20);
+
                 g2d.dispose();
+                super.paintComponent(g);
             }
         };
 
-        // Load Press Start 2P font
+        // Load font
         try {
             InputStream is = GameUI.class.getResourceAsStream("/fonts/PressStart2P-Regular.ttf");
             if (is != null) {
-                Font retroFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(18f);
+                Font retroFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(16f);
                 button.setFont(retroFont);
             } else {
-                System.err.println("⚠ Font not found: /fonts/PressStart2P-Regular.ttf");
-                button.setFont(new Font("Monospaced", Font.BOLD, 18));
+                button.setFont(new Font("Arial", Font.BOLD, 18));
             }
         } catch (Exception e) {
             e.printStackTrace();
-            button.setFont(new Font("Monospaced", Font.BOLD, 18));
+            button.setFont(new Font("Arial", Font.BOLD, 18));
         }
 
+        button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.setContentAreaFilled(false);
         button.setOpaque(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Hover effect
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                ((JButton)e.getSource()).putClientProperty("isHovered", true);
+                ((JButton)e.getSource()).repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                ((JButton)e.getSource()).putClientProperty("isHovered", false);
+                ((JButton)e.getSource()).repaint();
+            }
+        });
 
         return button;
     }
@@ -149,10 +157,12 @@ public class GameUI {
     public void show() {
         replayButton.setVisible(true);
         quitButton.setVisible(true);
+        homeButton.setVisible(true);
     }
 
     public void hide() {
         replayButton.setVisible(false);
         quitButton.setVisible(false);
+        homeButton.setVisible(false);
     }
 }

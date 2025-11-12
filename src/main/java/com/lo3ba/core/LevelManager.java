@@ -19,14 +19,16 @@ public class LevelManager {
     }
     
     public LevelManager(Player player, int startLevel) {
+        System.out.println("LevelManager constructor called with startLevel: " + startLevel);
         this.player = player;
         this.currentLevelIndex = startLevel - 1; // Convert to 0-based index
         initializeLevels();
         loadSounds();
-        
+
         // Initialize player at the correct starting position
         Level startingLevel = levels[currentLevelIndex];
         player.reset(startingLevel.getSpawnX(), startingLevel.getSpawnY());
+        System.out.println("LevelManager initialized with level " + startLevel);
     }
     
     private void initializeLevels() {

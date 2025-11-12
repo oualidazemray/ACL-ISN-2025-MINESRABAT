@@ -2,146 +2,136 @@ package com.lo3ba.levels;
 
 import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
+import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Spike;
+import com.lo3ba.gameobjects.Door;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import com.lo3ba.levels.Level1.*; // To access Platform, Spike, Door
 
 public class Level9 extends Level {
-    private List<Level1.Platform> platforms;
-    private List<Level1.Spike> spikes;
-    private Level1.Door door;
-    
-    // Assuming spikeImg and doorImg are fields inherited from the parent Level class.
-    
+
     public Level9(Player player) {
         super(player);
         spawnX = 50;
-        spawnY = 50; 	// Platform at y=100, spawn at 50
+        spawnY = 50; // Platform at y=100, spawn at 50
         init();
     }
-    
-    private void init() {
-        Level1 level1 = new Level1(player);
-        platforms = new ArrayList<>();
-        spikes = new ArrayList<>();
-        
-        // Very high start
-        platforms.add(level1.new Platform(0, 100, 100, 20));
-        
-        // Long precision jump section
-        platforms.add(level1.new Platform(150, 150, 45, 15));
-        spikes.add(level1.new Spike(150, 118, 32, 32));
-        
-        platforms.add(level1.new Platform(245, 200, 45, 15));
-        platforms.add(level1.new Platform(340, 250, 45, 15));
-        spikes.add(level1.new Spike(340, 218, 32, 32));
-        
-        platforms.add(level1.new Platform(435, 300, 45, 15));
-        platforms.add(level1.new Platform(530, 350, 45, 15));
-        spikes.add(level1.new Spike(530, 318, 32, 32));
-        
-        platforms.add(level1.new Platform(625, 400, 45, 15));
-        
-        // Final platform
-        platforms.add(level1.new Platform(700, 450, 100, 150));
-        
-        // Death floor
+    @Override
+    public  void init() {
+        platforms.clear();
+        spikes.clear();
+
+        // === START PLATFORM ===
+        platforms.add(new Platform(0, 100, 100, 20));
+
+        // === PRECISION JUMPS SECTION ===
+        platforms.add(new Platform(150, 150, 45, 15));
+        spikes.add(new Spike(150, 118, 32, 32));
+
+        platforms.add(new Platform(245, 200, 45, 15));
+        platforms.add(new Platform(340, 250, 45, 15));
+        spikes.add(new Spike(340, 218, 32, 32));
+
+        platforms.add(new Platform(435, 300, 45, 15));
+        platforms.add(new Platform(530, 350, 45, 15));
+        spikes.add(new Spike(530, 318, 32, 32));
+
+        platforms.add(new Platform(625, 400, 45, 15));
+
+        // === FINAL PLATFORM ===
+        platforms.add(new Platform(700, 450, 100, 150));
+
+        // === DEATH FLOOR ===
         for (int i = 0; i < 16; i++) {
-            spikes.add(level1.new Spike(i * 50, 568, 32, 32));
+            spikes.add(new Spike(i * 50, 568, 32, 32));
         }
-        
-        // Ceiling of death
+
+        // === CEILING OF DEATH ===
         for (int i = 0; i < 16; i++) {
-            spikes.add(level1.new Spike(i * 50, 0, 32, 32));
+            spikes.add(new Spike(i * 50, 0, 32, 32));
         }
-        
-        door = level1.new Door(730, 370, 50, 80);
+
+        // === DOOR ===
+        door = new Door(730, 370, 50, 80);
+
+        setImagesForObjects();
     }
-    
+
     @Override
     public void update() {
         completed = false;
-        
         Rectangle playerBounds = player.getBounds();
-        
-        // Platform collision (Unchanged and correct)
-        for (Level1.Platform platform : platforms) {
-            Rectangle platBounds = platform.bounds;
-            
+
+        // === PLATFORM COLLISION ===
+        for (Platform platform : platforms) {
+            Rectangle platBounds = platform.getBounds();
+
             if (player.getVelocityY() > 0) { // Only when falling
                 double playerBottom = player.getY() + Player.HEIGHT;
                 double playerBottomPrev = playerBottom - player.getVelocityY();
-                
-                if (player.getX() + Player.WIDTH > platBounds.x && 
+
+                if (player.getX() + Player.WIDTH > platBounds.x &&
                     player.getX() < platBounds.x + platBounds.width) {
-                    
+
                     if (playerBottomPrev <= platBounds.y && playerBottom >= platBounds.y) {
                         player.setY(platBounds.y - Player.HEIGHT);
                         player.setOnGround(true);
-                        break; 
+                        break;
                     }
                 }
             }
         }
-        
-        // 🌟 THE FIX: Spike collision - Re-introduced small grace period from Level 1 🌟
-        if (player.getY() < spawnY + 10) { 
-            for (Level1.Spike spike : spikes) {
-                // Apply the reduced hitbox from Level 1 for forgiving collision
-                Rectangle spikeHitbox = new Rectangle(
-                    spike.bounds.x + 4, 
-                    spike.bounds.y + 4, 
-                    spike.bounds.width - 8, 
-                    spike.bounds.height - 8
-                );
-                
-                if (checkCollision(playerBounds, spikeHitbox)) {
-                    player.die();
-                }
+
+        // === SPIKE COLLISION ===
+        for (Spike spike : spikes) {
+            Rectangle spikeHitbox = spike.getHitbox();
+
+            if (checkCollision(playerBounds, spikeHitbox)) {
+                player.die();
             }
         }
-        // ------------------------------------------------------------------
-        
-        // Door collision
-        if (checkCollision(playerBounds, door.bounds)) {
+
+        // === DOOR COLLISION ===
+        if (checkCollision(playerBounds, door.getBounds())) {
             completed = true;
         }
-        
-        // Fall off screen (Using GameLoop.BASE_HEIGHT + 50 for consistency)
-        if (player.getY() > GameLoop.BASE_HEIGHT + 50) { 
+
+        // === FALL OFF SCREEN ===
+        if (player.getY() > GameLoop.BASE_HEIGHT + 50) {
             player.die();
         }
     }
-    
+
     @Override
     public void render(Graphics2D g) {
-        // Draw platforms
+        // === PLATFORMS ===
         g.setColor(new Color(100, 100, 100));
-        for (Level1.Platform platform : platforms) {
-            g.fillRect(platform.bounds.x, platform.bounds.y, 
-                       platform.bounds.width, platform.bounds.height);
+        for (Platform platform : platforms) {
+            g.fillRect(platform.getBounds().x, platform.getBounds().y,
+                       platform.getBounds().width, platform.getBounds().height);
             g.setColor(Color.DARK_GRAY);
-            g.drawRect(platform.bounds.x, platform.bounds.y, 
-                       platform.bounds.width, platform.bounds.height);
+            g.drawRect(platform.getBounds().x, platform.getBounds().y,
+                       platform.getBounds().width, platform.getBounds().height);
             g.setColor(new Color(100, 100, 100));
         }
-        
-        // Draw spikes - Image ONLY (Removed color fallback)
-        for (Level1.Spike spike : spikes) {
+
+        // === SPIKES ===
+        for (Spike spike : spikes) {
             if (spikeImg != null) {
-                g.drawImage(spikeImg, spike.bounds.x, spike.bounds.y, 
-                            spike.bounds.width, spike.bounds.height, null);
-            } 
+                g.drawImage(spikeImg, spike.getBounds().x, spike.getBounds().y,
+                            spike.getBounds().width, spike.getBounds().height, null);
+            }
         }
-        
-        // Draw door - Image ONLY (Removed color fallback)
+
+        // === DOOR ===
         if (doorImg != null) {
-            g.drawImage(doorImg, door.bounds.x, door.bounds.y, 
-                        door.bounds.width, door.bounds.height, null);
-        } 
+            g.drawImage(doorImg, door.getBounds().x, door.getBounds().y,
+                        door.getBounds().width, door.getBounds().height, null);
+        }
     }
-    
+
     @Override
     public void reset() {
         completed = false;
