@@ -1,13 +1,16 @@
 package com.lo3ba.levels;
 
 import com.lo3ba.core.Player;
-import com.lo3ba.gameobjects.*;
+import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Spike;
+import com.lo3ba.gameobjects.Door;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.imageio.ImageIO;
 
 public abstract class Level {
     protected Player player;
@@ -94,5 +97,46 @@ public abstract class Level {
     
     protected boolean checkCollision(Rectangle a, Rectangle b) {
         return a.intersects(b);
+    }
+
+    // Debug rendering: draw platform visual bounds (gray), collision bounds (yellow),
+    // spikes visual bounds (red) and hitboxes (cyan). This is called from GameLoop when debug is enabled.
+    public void debugRender(Graphics2D g) {
+        // Draw platforms: visual (gray outline) + collision bounds (yellow)
+        for (Platform p : platforms) {
+            // Visual bounds (platform render uses these)
+            g.setColor(Color.GRAY);
+            g.drawRect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
+
+            // Collision bounds (Platform.getBounds() used for collision)
+            Rectangle coll = p.getBounds();
+            if (coll != null) {
+                g.setColor(Color.YELLOW);
+                g.drawRect(coll.x, coll.y, coll.width, coll.height);
+            }
+        }
+
+        // Draw spikes: visual (red) + hitbox (cyan)
+        for (Spike s : spikes) {
+            Rectangle vb = s.getBounds();
+            if (vb != null) {
+                g.setColor(Color.RED);
+                g.drawRect(vb.x, vb.y, vb.width, vb.height);
+            }
+            Rectangle hb = s.getHitbox();
+            if (hb != null) {
+                g.setColor(Color.CYAN);
+                g.drawRect(hb.x, hb.y, hb.width, hb.height);
+            }
+        }
+
+        // Door bounds (if exists)
+        if (door != null) {
+            Rectangle db = door.getBounds();
+            if (db != null) {
+                g.setColor(Color.GREEN);
+                g.drawRect(db.x, db.y, db.width, db.height);
+            }
+        }
     }
 }

@@ -18,8 +18,8 @@ public class Player {
     private static final double MOVE_SPEED = 5;
     private static final double MAX_FALL_SPEED = 15;
     
-    public static final int WIDTH = 32;
-    public static final int HEIGHT = 32;
+    public static final int WIDTH = 42;
+    public static final int HEIGHT = 42;
     
     private boolean onGround = false;
     private boolean dead = false;

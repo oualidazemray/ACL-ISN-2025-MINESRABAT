@@ -32,6 +32,8 @@ public class GameLoop extends JPanel {
     private boolean victoryScreenShown = false;
     private boolean gameUIShown = false;
 
+    private boolean debugOverlay = false; // Toggle with F3
+
     private Runnable onLevelComplete;
     private Runnable onReturnToMenu;
 
@@ -76,9 +78,15 @@ public class GameLoop extends JPanel {
         levelManager = new LevelManager(player, startLevel);
         inputHandler = new InputHandler(player);
 
+        // Key listener: send movement keys to inputHandler; F3 toggles debug overlay
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_F3) {
+                    debugOverlay = !debugOverlay;
+                    repaint();
+                    return;
+                }
                 inputHandler.keyPressed(e);
             }
 
@@ -368,6 +376,22 @@ public class GameLoop extends JPanel {
             );
             g2d.setPaint(gp);
             g2d.drawString(msg, x, y);
+        }
+
+        // Debug overlay: draw player bounds and level collision visuals
+        if (debugOverlay && currentLevel != null) {
+            // Player bounds (magenta)
+            Rectangle pb = player.getBounds();
+            g2d.setColor(Color.MAGENTA);
+            g2d.drawRect(pb.x, pb.y, pb.width, pb.height);
+
+            // Ask level to draw its debug shapes
+            currentLevel.debugRender(g2d);
+
+            // small legend
+            g2d.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            g2d.setColor(Color.WHITE);
+            g2d.drawString("DEBUG: F3 toggles overlay", 12, BASE_HEIGHT - 10);
         }
 
         g2d.dispose();

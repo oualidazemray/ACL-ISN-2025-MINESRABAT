@@ -3,7 +3,10 @@ package com.lo3ba.levels;
 import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
 import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Platform.PlatformType;
 import com.lo3ba.gameobjects.Spike;
+import com.lo3ba.gameobjects.Spike.SpikeType;
+
 import com.lo3ba.gameobjects.Door;
 
 import java.awt.*;
@@ -25,15 +28,17 @@ public class Level1 extends Level {
         spikes.clear();
 
         // Floor
-        platforms.add(new Platform(0, 500, 800, 100));
+        platforms.add(new Platform(0, 500, 800, 100, PlatformType.FLOOR));
+
 
         // Steps
-        platforms.add(new Platform(300, 450, 100, 20));
-        platforms.add(new Platform(450, 400, 100, 20));
+        platforms.add(new Platform(200, 400, 100, 20, PlatformType.STONE));
+        platforms.add(new Platform(600, 750, 100, 20, PlatformType.STONE));
+        platforms.add(new Platform(250, 400, 64, 32, PlatformType.STONE));
+        platforms.add(new Platform(350, 350, 80, 32, PlatformType.METAL));
 
         // Simple spike
-        spikes.add(new Spike(400, 468, 32, 32));
-
+        spikes.add(new Spike(400, 468, 32, 32, SpikeType.ELECTRIC));
         // Door at the end
         door = new Door(700, 420, 50, 80);
 

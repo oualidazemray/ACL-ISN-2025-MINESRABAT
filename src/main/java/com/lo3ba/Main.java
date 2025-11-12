@@ -69,7 +69,7 @@ public class Main {
     }
 
     private static void startGame(int startLevel) {
-        System.out.println("Starting game for level " + startLevel);
+        System.out.println("[Main] Starting game for level " + startLevel);
         // Hide previous screens to stop their timers
         if (mainMenuScreen != null) {
             // MainMenuScreen doesn't have a hide method, but we can assume it's not running timers when not visible
@@ -98,20 +98,15 @@ public class Main {
             });
         });
 
-
         frame.getContentPane().removeAll();
         frame.add(gameLoop);
-    
-        frame.revalidate();
 
+        frame.revalidate();
         frame.repaint();
-  
         frame.requestFocusInWindow();
 
         gameLoop.requestFocusInWindow();
-       
         gameLoop.start();
-      
     }
 
     private static void showLevelSelect() {
@@ -127,6 +122,7 @@ public class Main {
             levelSelectScreen = new LevelSelectScreen(maxUnlockedLevel, new LevelSelectScreen.OnLevelSelectedListener() {
                 @Override
                 public void onLevelSelected(int level) {
+                    System.out.println("[Main] Level selected: " + level);
                     SwingUtilities.invokeLater(() -> {
                         currentLevel = level;
                         startGame(level);
