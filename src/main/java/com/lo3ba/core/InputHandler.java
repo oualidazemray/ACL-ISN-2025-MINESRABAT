@@ -53,7 +53,8 @@ public class InputHandler {
         }
     }
     
-    private void updateMovement() {
+    // Make this public so the game loop can call it every frame to apply current input state
+    public void updateMovement() {
         if (leftPressed && !rightPressed) {
             player.moveLeft();
         } else if (rightPressed && !leftPressed) {

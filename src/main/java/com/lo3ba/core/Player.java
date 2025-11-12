@@ -30,6 +30,9 @@ public class Player {
     private Clip jumpSound;
     private Clip deathSound;
     
+    // Reused bounds rectangle to avoid per-frame allocations
+    private final Rectangle bounds = new Rectangle(0, 0, WIDTH, HEIGHT);
+    
     public Player(double x, double y) {
         this.x = x;
         this.y = y;
@@ -159,7 +162,9 @@ public class Player {
     // Corrected getter name to match Level1.java UI call
     public int getDeathCount() { return deaths; } 
     
+    // Reuse the bounds rectangle instead of allocating a new one each frame
     public Rectangle getBounds() {
-        return new Rectangle((int)x, (int)y, WIDTH, HEIGHT);
+        bounds.setBounds((int)x, (int)y, WIDTH, HEIGHT);
+        return bounds;
     }
 }

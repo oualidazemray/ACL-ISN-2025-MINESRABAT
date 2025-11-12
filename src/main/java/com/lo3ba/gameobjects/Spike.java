@@ -6,7 +6,9 @@ import java.awt.image.BufferedImage;
 public class Spike {
     private Rectangle bounds;
     private BufferedImage spikeImage;
-    
+    // Reused hitbox rectangle to avoid per-frame allocations
+    private final Rectangle hitbox = new Rectangle();
+
     public Spike(int x, int y, int width, int height) {
         this.bounds = new Rectangle(x, y, width, height);
     }
@@ -20,13 +22,9 @@ public class Spike {
     }
     
     public Rectangle getHitbox() {
-        // Slightly reduced hitbox for more forgiving collision
-        return new Rectangle(
-            bounds.x + 2,
-            bounds.y + 2,
-            bounds.width - 4,
-            bounds.height - 4
-        );
+        // Slightly reduced hitbox for more forgiving collision; reuse cached rectangle
+        hitbox.setBounds(bounds.x + 2, bounds.y + 2, bounds.width - 4, bounds.height - 4);
+        return hitbox;
     }
     
     public int getX() { return bounds.x; }

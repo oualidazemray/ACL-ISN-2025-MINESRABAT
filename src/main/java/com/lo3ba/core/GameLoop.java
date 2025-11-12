@@ -7,10 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,9 +16,9 @@ public class GameLoop extends JPanel {
     public static final int BASE_WIDTH = 1000;
     public static final int BASE_HEIGHT = 600;
     private static final int FPS = 60;
-    private static final int FRAME_DELAY = 1000 / FPS; // ~16ms
 
-    private Timer gameTimer;
+    private Thread gameThread;
+    private volatile boolean running = false;
 
     private Player player;
     private LevelManager levelManager;
@@ -56,7 +52,6 @@ public class GameLoop extends JPanel {
         loadFont();
         init(startLevel);
         setupUI();
-        setupTimer();
         System.out.println("GameLoop constructor finished");
     }
 
@@ -176,45 +171,106 @@ public class GameLoop extends JPanel {
         });
     }
 
-    private void setupTimer() {
-        gameTimer = new Timer(FRAME_DELAY, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                update();
-                repaint();
-            }
-        });
-    }
-
+    // Start the game loop on a dedicated thread
     public void start() {
         System.out.println("GameLoop.start() called");
-        
+
         // Ensure UI screens are hidden
-        hideVictoryScreen();
-        hideGameUI();
-        
-        // Start game timer
-        if (!gameTimer.isRunning()) {
-            gameTimer.start();
-            System.out.println("Game timer started");
-        }
-        
-        // Request focus for keyboard input
+        SwingUtilities.invokeLater(this::hideVictoryScreen);
+        SwingUtilities.invokeLater(this::hideGameUI);
+
+        if (running) return;
+
+        running = true;
+        gameThread = new Thread(this::runLoop, "GameLoop-Thread");
+        gameThread.start();
+
+        // Request focus for keyboard input on EDT
         SwingUtilities.invokeLater(() -> {
             requestFocusInWindow();
         });
     }
 
+    // Stop the game loop
     public void stop() {
         System.out.println("GameLoop.stop() called");
-        
-        if (gameTimer != null && gameTimer.isRunning()) {
-            gameTimer.stop();
+
+        running = false;
+        if (gameThread != null) {
+            try {
+                gameThread.join(500);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            gameThread = null;
         }
-        
-        // Hide all UI screens when stopping
-        hideVictoryScreen();
-        hideGameUI();
+
+        // Hide UI screens on EDT
+        SwingUtilities.invokeLater(() -> {
+            hideVictoryScreen();
+            hideGameUI();
+        });
+    }
+
+    private void runLoop() {
+        final double nsPerUpdate = 1_000_000_000.0 / FPS;
+        long lastTime = System.nanoTime();
+        double delta = 0.0;
+
+        while (running) {
+            long now = System.nanoTime();
+            delta += (now - lastTime) / nsPerUpdate;
+            lastTime = now;
+
+            while (delta >= 1.0) {
+                updateGameLogic();
+                delta -= 1.0;
+            }
+
+            // Request repaint (safe from background thread)
+            repaint();
+
+            // Sleep a little to avoid busy loop
+            try {
+                Thread.sleep(2);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    // Game logic update kept off the EDT. UI changes are scheduled onto the EDT.
+    private void updateGameLogic() {
+        if (!player.isDead()) {
+            // Apply input state each frame
+            inputHandler.updateMovement();
+
+            player.update();
+            levelManager.update();
+
+            Level currentLevel = levelManager.getCurrentLevel();
+            if (currentLevel != null && currentLevel.isCompleted() && !victoryScreenShown) {
+                // Call the callback to update unlocked levels on EDT
+                SwingUtilities.invokeLater(() -> {
+                    if (onLevelComplete != null) {
+                        onLevelComplete.run();
+                    }
+                    // Use a brief delay before showing the victory screen on the EDT
+                    Timer delayTimer = new Timer(500, e -> {
+                        showVictoryScreen();
+                        ((Timer)e.getSource()).stop();
+                    });
+                    delayTimer.setRepeats(false);
+                    delayTimer.start();
+                });
+
+                // Set flag immediately to avoid multiple triggers
+                victoryScreenShown = true;
+            }
+        } else {
+            // Player died -> show game UI on EDT
+            SwingUtilities.invokeLater(this::showGameUI);
+        }
     }
 
     private void showVictoryScreen() {
@@ -249,43 +305,6 @@ public class GameLoop extends JPanel {
             gameUI.hide();
             gameUIShown = false;
         }
-    }
-
-    private void update() {
-        if (!player.isDead()) {
-            player.update();
-            levelManager.update();
-
-            // Check if level completed
-            Level currentLevel = levelManager.getCurrentLevel();
-            if (currentLevel != null && currentLevel.isCompleted() && !victoryScreenShown) {
-                // Call the callback to update unlocked levels
-                if (onLevelComplete != null) {
-                    onLevelComplete.run();
-                }
-                
-                // Small delay before showing victory screen
-                Timer delayTimer = new Timer(500, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        showVictoryScreen();
-                        ((Timer)e.getSource()).stop();
-                    }
-                });
-                delayTimer.setRepeats(false);
-                delayTimer.start();
-                
-                // Set flag immediately to prevent multiple triggers
-                victoryScreenShown = true;
-            }
-        } else {
-            // Player died, show game UI
-            showGameUI();
-        }
-    }
-
-    public int getCurrentLevel() {
-        return levelManager.getCurrentLevelNumber();
     }
 
     @Override
@@ -370,5 +389,13 @@ public class GameLoop extends JPanel {
     // Public method to get level manager
     public LevelManager getLevelManager() {
         return levelManager;
+    }
+
+    // Restored accessor expected by Main.java
+    public int getCurrentLevel() {
+        if (levelManager != null) {
+            return levelManager.getCurrentLevelNumber();
+        }
+        return 0;
     }
 }
