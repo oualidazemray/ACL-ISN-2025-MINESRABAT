@@ -3,8 +3,11 @@ package com.lo3ba.levels;
 import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
 import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Platform.PlatformType;
+import com.lo3ba.gameobjects.Spike.SpikeType;
 import com.lo3ba.gameobjects.Spike;
 import com.lo3ba.gameobjects.Door;
+import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -24,33 +27,33 @@ public class Level9 extends Level {
         spikes.clear();
 
         // === START PLATFORM ===
-        platforms.add(new Platform(0, 100, 100, 20));
+        platforms.add(new Platform(0, 100, 100, 32, PlatformType.FLOOR));
 
         // === PRECISION JUMPS SECTION ===
-        platforms.add(new Platform(150, 150, 45, 15));
-        spikes.add(new Spike(150, 118, 32, 32));
+        platforms.add(new Platform(150, 150, 80, 32, PlatformType.CRATE));
+        spikes.add(new Spike(150, 118, 32, 32, SpikeType.NORMAL));
 
-        platforms.add(new Platform(245, 200, 45, 15));
-        platforms.add(new Platform(340, 250, 45, 15));
-        spikes.add(new Spike(340, 218, 32, 32));
+        platforms.add(new Platform(245, 200, 64, 32, PlatformType.STONE));
+        platforms.add(new Platform(340, 250, 80, 32, PlatformType.METAL));
+        spikes.add(new Spike(340, 218, 32, 32, SpikeType.FIRE));
 
-        platforms.add(new Platform(435, 300, 45, 15));
-        platforms.add(new Platform(530, 350, 45, 15));
-        spikes.add(new Spike(530, 318, 32, 32));
+        platforms.add(new Platform(435, 300, 64, 32, PlatformType.BRICK));
+        platforms.add(new Platform(530, 350, 80, 32, PlatformType.CRATE));
+        spikes.add(new Spike(530, 318, 32, 32, SpikeType.POISON));
 
-        platforms.add(new Platform(625, 400, 45, 15));
+        platforms.add(new Platform(625, 400, 64, 32, PlatformType.STONE));
 
         // === FINAL PLATFORM ===
-        platforms.add(new Platform(700, 450, 100, 150));
+        platforms.add(new Platform(700, 450, 100, 32, PlatformType.FLOOR));
 
         // === DEATH FLOOR ===
         for (int i = 0; i < 16; i++) {
-            spikes.add(new Spike(i * 50, 568, 32, 32));
+            spikes.add(new Spike(i * 50, 568, 32, 32, SpikeType.BONE));
         }
 
         // === CEILING OF DEATH ===
         for (int i = 0; i < 16; i++) {
-            spikes.add(new Spike(i * 50, 0, 32, 32));
+            spikes.add(new Spike(i * 50, 0, 32, 32, SpikeType.ICE));
         }
 
         // === DOOR ===
@@ -93,8 +96,18 @@ public class Level9 extends Level {
             }
         }
 
-        // === DOOR COLLISION ===
-        if (checkCollision(playerBounds, door.getBounds())) {
+        // Star collection and door open
+        checkStarCollection();
+        checkDoorOpen();
+
+        // Door collision
+        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is closed, player cannot pass
+            // Push player back or prevent movement
+            player.setX(player.getX() - player.getVelocityX());
+            player.setY(player.getY() - player.getVelocityY());
+        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is open, player can pass to next level
             completed = true;
         }
 
@@ -126,10 +139,7 @@ public class Level9 extends Level {
         }
 
         // === DOOR ===
-        if (doorImg != null) {
-            g.drawImage(doorImg, door.getBounds().x, door.getBounds().y,
-                        door.getBounds().width, door.getBounds().height, null);
-        }
+        door.render(g);
     }
 
     @Override

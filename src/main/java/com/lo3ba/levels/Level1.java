@@ -6,8 +6,8 @@ import com.lo3ba.gameobjects.Platform;
 import com.lo3ba.gameobjects.Platform.PlatformType;
 import com.lo3ba.gameobjects.Spike;
 import com.lo3ba.gameobjects.Spike.SpikeType;
-
 import com.lo3ba.gameobjects.Door;
+import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -26,21 +26,47 @@ public class Level1 extends Level {
     public void init() {
         platforms.clear();
         spikes.clear();
+        stars.clear();
 
-        // Floor
-        platforms.add(new Platform(0, 500, 800, 100, PlatformType.FLOOR));
+        requiredStars = 2; // 2 stars to open door
 
+      // === MAIN FLOOR - Split with dangerous gap ===
+        platforms.add(new Platform(0, 500, 320, 100, PlatformType.FLOOR));
+        platforms.add(new Platform(520, 500, 480, 100, PlatformType.FLOOR));
 
-        // Steps
-        platforms.add(new Platform(200, 400, 100, 20, PlatformType.STONE));
-        platforms.add(new Platform(600, 750, 100, 20, PlatformType.STONE));
-        platforms.add(new Platform(250, 400, 64, 32, PlatformType.STONE));
-        platforms.add(new Platform(350, 350, 80, 32, PlatformType.METAL));
+        // === STARTING AREA - Tutorial section ===
+        platforms.add(new Platform(180, 420, 100, 32, PlatformType.STONE));
+        
+        // === FIRST CHALLENGE - Climb up ===
+        platforms.add(new Platform(320, 360, 80, 32, PlatformType.CRATE));
+        platforms.add(new Platform(240, 290, 80, 32, PlatformType.METAL));
+        
+        // === FLOATING PLATFORMS - Gap crossing ===
+        platforms.add(new Platform(380, 330, 70, 32, PlatformType.BRICK));
+        platforms.add(new Platform(480, 380, 80, 32, PlatformType.METAL));
+        
+        // === LANDING ZONE ===
+        platforms.add(new Platform(600, 420, 100, 32, PlatformType.STONE));
+        
+        // === FINAL PLATFORM - Door area ===
+        platforms.add(new Platform(720, 350, 120, 32, PlatformType.CRATE));
 
-        // Simple spike
-        spikes.add(new Spike(400, 468, 32, 32, SpikeType.ELECTRIC));
-        // Door at the end
-        door = new Door(700, 420, 50, 80);
+        // === SPIKE HAZARDS - Gap floor ===
+        for (int i = 0; i < 7; i++) {
+            spikes.add(new Spike(320 + i * 32, 468, 32, 32, SpikeType.ELECTRIC));
+        }
+        
+        // === PLATFORM HAZARDS - Adds risk to jumps ===
+        spikes.add(new Spike(350, 328, 32, 32, SpikeType.FIRE));
+        spikes.add(new Spike(510, 348, 32, 32, SpikeType.NORMAL));
+
+        // === STARS - Strategic placement ===
+        stars.add(new Star(210, 410, 32, 32));      // Star 1 - Easy warmup
+
+        stars.add(new Star(750, 310, 32, 32));      // Star 4 - Near door
+
+        // === DOOR - Requires all 4 stars ===
+        door = new Door(770, 270, 50, 80);
 
         setImagesForObjects();
     }
@@ -73,20 +99,25 @@ public class Level1 extends Level {
 
         // Spike collision
         for (Spike spike : spikes) {
-            Rectangle spikeHitbox = new Rectangle(
-                spike.getBounds().x + 4,
-                spike.getBounds().y + 4,
-                spike.getBounds().width - 8,
-                spike.getBounds().height - 8
-            );
+            Rectangle spikeHitbox = spike.getHitbox();
 
             if (checkCollision(playerBounds, spikeHitbox)) {
                 player.die();
             }
         }
 
+        // Star collection and door open
+        checkStarCollection();
+        checkDoorOpen();
+
         // Door collision
-        if (checkCollision(playerBounds, door.getBounds())) {
+        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is closed, player cannot pass
+            // Push player back or prevent movement
+            player.setX(player.getX() - player.getVelocityX());
+            player.setY(player.getY() - player.getVelocityY());
+        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is open, player can pass to next level
             completed = true;
         }
 
@@ -98,6 +129,6 @@ public class Level1 extends Level {
 
     @Override
     public void reset() {
-        completed = false;
+        super.reset();
     }
 }

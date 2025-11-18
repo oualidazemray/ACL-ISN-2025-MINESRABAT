@@ -3,8 +3,11 @@ package com.lo3ba.levels;
 import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
 import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Platform.PlatformType;
 import com.lo3ba.gameobjects.Spike;
+import com.lo3ba.gameobjects.Spike.SpikeType;
 import com.lo3ba.gameobjects.Door;
+import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -98,8 +101,18 @@ public class Level6 extends Level {
             }
         }
 
-        // === DOOR COLLISION ===
-        if (checkCollision(playerBounds, door.getBounds())) {
+        // Star collection and door open
+        checkStarCollection();
+        checkDoorOpen();
+
+        // Door collision
+        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is closed, player cannot pass
+            // Push player back or prevent movement
+            player.setX(player.getX() - player.getVelocityX());
+            player.setY(player.getY() - player.getVelocityY());
+        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is open, player can pass to next level
             completed = true;
         }
 
@@ -131,10 +144,7 @@ public class Level6 extends Level {
         }
 
         // === DOOR ===
-        if (doorImg != null) {
-            g.drawImage(doorImg, door.getBounds().x, door.getBounds().y,
-                        door.getBounds().width, door.getBounds().height, null);
-        }
+        door.render(g);
     }
 
     @Override

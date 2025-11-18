@@ -2,15 +2,23 @@ package com.lo3ba.levels;
 
 import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
-import com.lo3ba.gameobjects.*;
+import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Platform.PlatformType;
+import com.lo3ba.gameobjects.Spike;
+import com.lo3ba.gameobjects.Spike.SpikeType;
+import com.lo3ba.gameobjects.Door;
+import com.lo3ba.gameobjects.Star;
+
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Level3 extends Level {
 
-    public Level3(Player player) {
+      public Level3(Player player) {
         super(player);
         spawnX = 50;
-        spawnY = 150;
+        spawnY = 400;
         init();
     }
 
@@ -18,29 +26,71 @@ public class Level3 extends Level {
     public void init() {
         platforms.clear();
         spikes.clear();
+        stars.clear();
 
-        // High starting platform
-        platforms.add(new Platform(0, 200, 150, 20));
+        requiredStars = 5; // 2 stars to open door
 
-        // Descending platforms with spikes
-        platforms.add(new Platform(200, 250, 80, 20));
-        spikes.add(new Spike(200, 218, 32, 32));
+         // === THEME: "THE GAUNTLET" - Precision platforming with deadly floor ===
 
-        platforms.add(new Platform(330, 300, 80, 20));
+        // === START SAFE ZONE ===
+        platforms.add(new Platform(0, 450, 140, 32, PlatformType.FLOOR));
 
-        platforms.add(new Platform(460, 350, 80, 20));
-        spikes.add(new Spike(500, 318, 32, 32));
+        // === NARROW PILLAR PATH - Vertical challenge ===
+        platforms.add(new Platform(170, 400, 50, 32, PlatformType.STONE));
+        platforms.add(new Platform(250, 350, 50, 32, PlatformType.BRICK));
+        spikes.add(new Spike(265, 318, 32, 32, SpikeType.FIRE));
+        
+        platforms.add(new Platform(170, 280, 50, 32, PlatformType.METAL));
+        platforms.add(new Platform(250, 210, 50, 32, PlatformType.STONE));
+        
+        // === FLOATING ISLAND - High risk zone ===
+        platforms.add(new Platform(360, 160, 100, 32, PlatformType.CRATE));
+        spikes.add(new Spike(380, 128, 32, 32, SpikeType.ELECTRIC));
+        spikes.add(new Spike(420, 128, 32, 32, SpikeType.POISON));
 
-        platforms.add(new Platform(590, 400, 80, 20));
+        // === BRIDGE SECTION - Horizontal precision ===
+        platforms.add(new Platform(500, 200, 60, 32, PlatformType.BRICK));
+        platforms.add(new Platform(600, 180, 60, 32, PlatformType.METAL));
+        spikes.add(new Spike(615, 148, 32, 32, SpikeType.NORMAL));
+        
+        platforms.add(new Platform(700, 220, 70, 32, PlatformType.STONE));
 
-        // Floor with spikes
-        platforms.add(new Platform(0, 500, 800, 100));
-        for (int i = 0; i < 15; i++) {
-            spikes.add(new Spike(i * 50 + 10, 468, 32, 32));
+        // === DESCENT ZIGZAG - Controlled falling ===
+        platforms.add(new Platform(800, 280, 60, 32, PlatformType.BRICK));
+        spikes.add(new Spike(815, 248, 32, 32, SpikeType.BONE));
+        
+        platforms.add(new Platform(720, 340, 60, 32, PlatformType.CRATE));
+        platforms.add(new Platform(800, 400, 70, 32, PlatformType.METAL));
+        spikes.add(new Spike(820, 368, 32, 32, SpikeType.ELECTRIC));
+
+        // === FINAL STRETCH - Landing platforms ===
+        platforms.add(new Platform(680, 460, 80, 32, PlatformType.STONE));
+        platforms.add(new Platform(560, 500, 100, 32, PlatformType.FLOOR));
+        
+        // === DOOR PLATFORM ===
+        platforms.add(new Platform(420, 480, 100, 32, PlatformType.FLOOR));
+
+        // === DEADLY FLOOR - Complete coverage ===
+        for (int i = 0; i < 20; i++) {
+            spikes.add(new Spike(i * 50, 568, 32, 32, SpikeType.ICE));
         }
 
-        // Door at the end
-        door = new Door(700, 320, 50, 80);
+        // === ADDITIONAL HAZARDS - Gap traps ===
+        spikes.add(new Spike(320, 538, 32, 32, SpikeType.POISON));
+        spikes.add(new Spike(360, 538, 32, 32, SpikeType.POISON));
+        spikes.add(new Spike(640, 538, 32, 32, SpikeType.FIRE));
+        spikes.add(new Spike(680, 538, 32, 32, SpikeType.FIRE));
+
+        // === STARS - 8 stars for maximum challenge ===
+        stars.add(new Star(185, 360, 32, 32));      // Star 1 - First pillar
+        stars.add(new Star(185, 240, 32, 32));      // Star 2 - High pillar
+        stars.add(new Star(265, 170, 32, 32));      // Star 3 - Peak pillar
+        stars.add(new Star(370, 120, 32, 32));      // Star 4 - Floating island (left side, away from spikes)
+    
+        stars.add(new Star(600, 460, 32, 32));      // Star 8 - Final stretch
+
+        // === DOOR - Requires all 8 stars ===
+        door = new Door(450, 400, 50, 80);
 
         setImagesForObjects();
     }
@@ -51,19 +101,20 @@ public class Level3 extends Level {
 
         Rectangle playerBounds = player.getBounds();
 
-        // Platform collision (only when falling)
+        // Platform collision - only when falling
         for (Platform platform : platforms) {
             if (player.getVelocityY() > 0) {
                 double playerBottom = player.getY() + Player.HEIGHT;
                 double playerBottomPrev = playerBottom - player.getVelocityY();
 
-                Rectangle platBounds = platform.getBounds();
+                boolean horizontalOverlap = player.getX() + Player.WIDTH > platform.getBounds().x &&
+                                            player.getX() < platform.getBounds().x + platform.getBounds().width;
 
-                boolean horizontalOverlap = player.getX() + Player.WIDTH > platBounds.x &&
-                                            player.getX() < platBounds.x + platBounds.width;
+                if (horizontalOverlap &&
+                    playerBottomPrev <= platform.getBounds().y &&
+                    playerBottom >= platform.getBounds().y) {
 
-                if (horizontalOverlap && playerBottomPrev <= platBounds.y && playerBottom >= platBounds.y) {
-                    player.setY(platBounds.y - Player.HEIGHT);
+                    player.setY(platform.getBounds().y - Player.HEIGHT);
                     player.setOnGround(true);
                     break;
                 }
@@ -72,14 +123,25 @@ public class Level3 extends Level {
 
         // Spike collision
         for (Spike spike : spikes) {
-            if (checkCollision(playerBounds, spike.getHitbox())) {
+            Rectangle spikeHitbox = spike.getHitbox();
+
+            if (checkCollision(playerBounds, spikeHitbox)) {
                 player.die();
-                break;
             }
         }
 
+        // Star collection and door open
+        checkStarCollection();
+        checkDoorOpen();
+
         // Door collision
-        if (door != null && checkCollision(playerBounds, door.getBounds())) {
+        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is closed, player cannot pass
+            // Push player back or prevent movement
+            player.setX(player.getX() - player.getVelocityX());
+            player.setY(player.getY() - player.getVelocityY());
+        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is open, player can pass to next level
             completed = true;
         }
 
@@ -90,43 +152,7 @@ public class Level3 extends Level {
     }
 
     @Override
-    public void render(Graphics2D g) {
-        // Draw platforms
-        g.setColor(new Color(100, 100, 100));
-        for (Platform platform : platforms) {
-            Rectangle bounds = platform.getBounds();
-            g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-            g.setColor(Color.DARK_GRAY);
-            g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
-            g.setColor(new Color(100, 100, 100));
-        }
-
-        // Draw spikes
-        for (Spike spike : spikes) {
-            Rectangle bounds = spike.getBounds();
-            if (spikeImg != null) {
-                g.drawImage(spikeImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
-            } else {
-                g.setColor(Color.RED);
-                int[] xPoints = {bounds.x, bounds.x + bounds.width / 2, bounds.x + bounds.width};
-                int[] yPoints = {bounds.y + bounds.height, bounds.y, bounds.y + bounds.height};
-                g.fillPolygon(xPoints, yPoints, 3);
-            }
-        }
-
-        // Draw door
-        if (doorImg != null) {
-            g.drawImage(doorImg, door.getBounds().x, door.getBounds().y,
-                        door.getBounds().width, door.getBounds().height, null);
-        } else {
-            g.setColor(Color.GREEN);
-            Rectangle bounds = door.getBounds();
-            g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-        }
-    }
-
-    @Override
     public void reset() {
-        completed = false;
+        super.reset();
     }
 }

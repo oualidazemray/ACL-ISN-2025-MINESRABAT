@@ -5,6 +5,7 @@ import javax.imageio.ImageIO;
 import java.io.InputStream;
 
 import javax.sound.sampled.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 

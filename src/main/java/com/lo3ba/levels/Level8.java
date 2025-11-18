@@ -3,8 +3,11 @@ package com.lo3ba.levels;
 import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
 import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Platform.PlatformType;
 import com.lo3ba.gameobjects.Spike;
+import com.lo3ba.gameobjects.Spike.SpikeType;
 import com.lo3ba.gameobjects.Door;
+import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -15,43 +18,53 @@ public class Level8 extends Level {
     public Level8(Player player) {
         super(player);
         spawnX = 50;
-        spawnY = 450; // Starting position
+        spawnY = 400;
         init();
     }
+
     @Override
-    public  void init() {
+    public void init() {
         platforms.clear();
         spikes.clear();
 
         // === START PLATFORM ===
-        platforms.add(new Platform(0, 500, 100, 100));
+        platforms.add(new Platform(0, 450, 150, 32, PlatformType.FLOOR));
 
-        // === PRECISION PLATFORMS ===
-        platforms.add(new Platform(130, 450, 40, 15));
-        platforms.add(new Platform(200, 400, 40, 15));
-        platforms.add(new Platform(270, 350, 40, 15));
-        platforms.add(new Platform(340, 300, 40, 15));
-        platforms.add(new Platform(410, 250, 40, 15));
-        platforms.add(new Platform(480, 300, 40, 15));
-        platforms.add(new Platform(550, 350, 40, 15));
-        platforms.add(new Platform(620, 400, 40, 15));
+        // === FIRST SECTION ===
+        platforms.add(new Platform(200, 400, 80, 32, PlatformType.CRATE));
+        spikes.add(new Spike(260, 368, 32, 32, SpikeType.NORMAL));
 
-        // === END PLATFORM ===
-        platforms.add(new Platform(690, 450, 110, 150));
+        // === SECOND SECTION ===
+        platforms.add(new Platform(320, 350, 64, 32, PlatformType.STONE));
+        platforms.add(new Platform(440, 300, 80, 32, PlatformType.METAL));
+        spikes.add(new Spike(470, 268, 32, 32, SpikeType.FIRE));
 
-        // === FLOOR SPIKES ===
-        for (int i = 2; i < 14; i++) {
-            spikes.add(new Spike(i * 50, 568, 32, 32));
+        // === THIRD SECTION ===
+        platforms.add(new Platform(560, 250, 64, 32, PlatformType.BRICK));
+        spikes.add(new Spike(590, 218, 32, 32, SpikeType.POISON));
+
+        // === TOP AREA ===
+        platforms.add(new Platform(680, 200, 80, 32, PlatformType.CRATE));
+        platforms.add(new Platform(780, 150, 100, 32, PlatformType.STONE));
+
+        // === DESCENDING SECTION ===
+        platforms.add(new Platform(700, 280, 64, 32, PlatformType.METAL));
+        spikes.add(new Spike(700, 248, 32, 32, SpikeType.ELECTRIC));
+
+        platforms.add(new Platform(620, 360, 80, 32, PlatformType.BRICK));
+        platforms.add(new Platform(540, 420, 64, 32, PlatformType.CRATE));
+        spikes.add(new Spike(540, 388, 32, 32, SpikeType.BONE));
+
+        platforms.add(new Platform(440, 470, 100, 32, PlatformType.FLOOR));
+        platforms.add(new Platform(340, 520, 100, 32, PlatformType.FLOOR));
+
+        // === FLOOR TRAPS ===
+        for (int i = 0; i < 18; i++) {
+            spikes.add(new Spike(i * 50, 568, 32, 32, SpikeType.ICE));
         }
 
-        // === PLATFORM SPIKES ===
-        spikes.add(new Spike(200, 368, 32, 32));
-        spikes.add(new Spike(340, 268, 32, 32));
-        spikes.add(new Spike(480, 268, 32, 32));
-        spikes.add(new Spike(620, 368, 32, 32));
-
         // === DOOR ===
-        door = new Door(730, 370, 50, 80);
+        door = new Door(350, 440, 50, 80);
 
         setImagesForObjects();
     }
@@ -91,11 +104,11 @@ public class Level8 extends Level {
         }
 
         // === DOOR COLLISION ===
-        if (checkCollision(playerBounds, door.getBounds())) {
+        if (door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
             completed = true;
         }
 
-        // === FALL OFF SCREEN ===
+        // === OUT OF BOUNDS ===
         if (player.getY() > GameLoop.BASE_HEIGHT + 50) {
             player.die();
         }
@@ -123,10 +136,7 @@ public class Level8 extends Level {
         }
 
         // === DOOR ===
-        if (doorImg != null) {
-            g.drawImage(doorImg, door.getBounds().x, door.getBounds().y,
-                        door.getBounds().width, door.getBounds().height, null);
-        }
+        door.render(g);
     }
 
     @Override

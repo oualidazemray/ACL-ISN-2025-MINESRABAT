@@ -355,6 +355,12 @@ public class GameLoop extends JPanel {
         g2d.setColor(new Color(255, 100, 100));
         g2d.drawString("DEATHS: " + player.getDeathCount(), 10, 60);
 
+        // Stars counter with shadow
+        g2d.setColor(Color.BLACK);
+        g2d.drawString("STARS: " + levelManager.getCurrentLevel().getCollectedStars() + " / " + levelManager.getCurrentLevel().getTotalStars(), 12, 92);
+        g2d.setColor(Color.YELLOW);
+        g2d.drawString("STARS: " + levelManager.getCurrentLevel().getCollectedStars() + " / " + levelManager.getCurrentLevel().getTotalStars(), 10, 90);
+
         if (player.isDead()) {
             // Draw "YOU DIED!" with retro style
             Font bigFont = retroFont.deriveFont(32f);

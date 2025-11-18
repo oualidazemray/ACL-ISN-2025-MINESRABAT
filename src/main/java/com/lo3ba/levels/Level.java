@@ -4,6 +4,7 @@ import com.lo3ba.core.Player;
 import com.lo3ba.gameobjects.Platform;
 import com.lo3ba.gameobjects.Spike;
 import com.lo3ba.gameobjects.Door;
+import com.lo3ba.gameobjects.Star;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -16,99 +17,142 @@ public abstract class Level {
     protected Player player;
     protected boolean completed = false;
     protected int spawnX, spawnY;
-    
+    protected int requiredStars = 0; // Number of stars needed to open the door
+
     protected List<Platform> platforms;
     protected List<Spike> spikes;
     protected Door door;
-    
+    protected List<Star> stars;
+    protected int stuckTimer = 0;
+
     protected BufferedImage platformImg;
     protected BufferedImage spikeImg;
-    protected BufferedImage doorImg;
-    
+    protected BufferedImage doorClosedImg; // NEW
+    protected BufferedImage doorOpenImg;   // NEW
+    protected BufferedImage starImg;
+   
+
     public Level(Player player) {
         this.player = player;
         this.platforms = new ArrayList<>();
         this.spikes = new ArrayList<>();
+        this.stars = new ArrayList<>();
         loadTextures();
     }
-    
+
     protected void loadTextures() {
         try {
             platformImg = ImageIO.read(getClass().getClassLoader()
-                .getResourceAsStream("assets/textures/background.png"));
+                    .getResourceAsStream("assets/textures/background.png"));
             spikeImg = ImageIO.read(getClass().getClassLoader()
-                .getResourceAsStream("assets/textures/spike.png"));
-            doorImg = ImageIO.read(getClass().getClassLoader()
-                .getResourceAsStream("assets/textures/door.png"));
-            
-            // Set images to game objects (will be done in init)
+                    .getResourceAsStream("assets/textures/spike.png"));
+            doorClosedImg = ImageIO.read(getClass().getClassLoader()
+                    .getResourceAsStream("assets/textures/doorClose.png")); // NEW
+            doorOpenImg = ImageIO.read(getClass().getClassLoader()
+                    .getResourceAsStream("assets/textures/doorOpen.png"));  // NEW
+            starImg = ImageIO.read(getClass().getClassLoader()
+                    .getResourceAsStream("assets/textures/star.png"));
+
         } catch (IOException e) {
             System.err.println("⚠ Could not load textures: " + e.getMessage());
         }
     }
-    
+
     protected void setImagesForObjects() {
         // Set spike images
         for (Spike spike : spikes) {
             spike.setSpikeImage(spikeImg);
         }
-        
-        // Set door image
+
+        // Set door images
         if (door != null) {
-            door.setDoorImage(doorImg);
+            door.setClosedImage(doorClosedImg);
+            door.setOpenImage(doorOpenImg);
+        }
+
+        // Set star images
+        for (Star star : stars) {
+            star.setStarImage(starImg);
         }
     }
-    
+
     public abstract void init();
     public abstract void update();
-    
+
     public void render(Graphics2D g) {
-        // Render platforms
         for (Platform platform : platforms) {
             platform.render(g);
         }
-        
-        // Render spikes
         for (Spike spike : spikes) {
             spike.render(g);
         }
-        
-        // Render door
+        for (Star star : stars) {
+            star.render(g);
+        }
         if (door != null) {
             door.render(g);
         }
     }
-    
+
     public void reset() {
         completed = false;
+        for (Star star : stars) {
+            star.reset();
+        }
     }
-    
+    public int getTotalStars() {
+    return stars.size();
+}
+
+public int getCollectedStars() {
+    int count = 0;
+    for (Star star : stars) {
+        if (star.isCollected()) count++;
+    }
+    return count;
+}
+
     public boolean isCompleted() {
         return completed;
     }
-    
-    public int getSpawnX() {
-        return spawnX;
+
+    public boolean allStarsCollected() {
+        for (Star star : stars) {
+            if (!star.isCollected()) {
+                return false;
+            }
+        }
+        return true;
     }
-    
-    public int getSpawnY() {
-        return spawnY;
-    }
-    
+
+    public int getSpawnX() { return spawnX; }
+    public int getSpawnY() { return spawnY; }
+
+    public int getStuckTimer() { return stuckTimer; }
+
     protected boolean checkCollision(Rectangle a, Rectangle b) {
         return a.intersects(b);
     }
 
-    // Debug rendering: draw platform visual bounds (gray), collision bounds (yellow),
-    // spikes visual bounds (red) and hitboxes (cyan). This is called from GameLoop when debug is enabled.
+    protected void checkStarCollection() {
+        Rectangle playerBounds = player.getBounds();
+        for (Star star : stars) {
+            if (!star.isCollected() && checkCollision(playerBounds, star.getBounds())) {
+                star.collect();
+            }
+        }
+    }
+
+    protected void checkDoorOpen() {
+        if (getCollectedStars() >= requiredStars && door != null && !door.isOpen()) {
+            door.open();
+        }
+    }
+
     public void debugRender(Graphics2D g) {
-        // Draw platforms: visual (gray outline) + collision bounds (yellow)
         for (Platform p : platforms) {
-            // Visual bounds (platform render uses these)
             g.setColor(Color.GRAY);
             g.drawRect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
-
-            // Collision bounds (Platform.getBounds() used for collision)
             Rectangle coll = p.getBounds();
             if (coll != null) {
                 g.setColor(Color.YELLOW);
@@ -116,7 +160,6 @@ public abstract class Level {
             }
         }
 
-        // Draw spikes: visual (red) + hitbox (cyan)
         for (Spike s : spikes) {
             Rectangle vb = s.getBounds();
             if (vb != null) {
@@ -130,7 +173,6 @@ public abstract class Level {
             }
         }
 
-        // Door bounds (if exists)
         if (door != null) {
             Rectangle db = door.getBounds();
             if (db != null) {

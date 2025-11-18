@@ -2,15 +2,23 @@ package com.lo3ba.levels;
 
 import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
-import com.lo3ba.gameobjects.*;
+import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Platform.PlatformType;
+import com.lo3ba.gameobjects.Spike;
+import com.lo3ba.gameobjects.Spike.SpikeType;
+import com.lo3ba.gameobjects.Door;
+import com.lo3ba.gameobjects.Star;
+
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Level2 extends Level {
 
-    public Level2(Player player) {
+      public Level2(Player player) {
         super(player);
         spawnX = 50;
-        spawnY = 450;
+        spawnY = 400;
         init();
     }
 
@@ -18,26 +26,63 @@ public class Level2 extends Level {
     public void init() {
         platforms.clear();
         spikes.clear();
+        stars.clear();
 
-        // Floor with gap
-        platforms.add(new Platform(0, 500, 250, 100));
-        platforms.add(new Platform(350, 500, 450, 100));
+        requiredStars = 3; // 2 stars to open door
 
-        // Gap with spikes at bottom
-        spikes.add(new Spike(260, 468, 32, 32));
-        spikes.add(new Spike(292, 468, 32, 32));
+        // === START PLATFORM ===
+        platforms.add(new Platform(0, 450, 150, 32, PlatformType.FLOOR));
 
-        // Floating platforms
-        platforms.add(new Platform(150, 350, 100, 20));
-        platforms.add(new Platform(300, 300, 100, 20));
-        platforms.add(new Platform(500, 350, 100, 20));
+        // === ASCENDING PATH - Left side climb ===
+        platforms.add(new Platform(180, 390, 80, 32, PlatformType.CRATE));
+        platforms.add(new Platform(120, 320, 70, 32, PlatformType.STONE));
+        
+        platforms.add(new Platform(220, 260, 80, 32, PlatformType.METAL));
+        spikes.add(new Spike(250, 228, 32, 32, SpikeType.FIRE));
+        
+        platforms.add(new Platform(140, 200, 70, 32, PlatformType.BRICK));
+        
+        // === TOP SECTION - Horizontal challenge ===
+        platforms.add(new Platform(240, 150, 90, 32, PlatformType.STONE));
+        platforms.add(new Platform(370, 120, 80, 32, PlatformType.METAL));
+        spikes.add(new Spike(400, 88, 32, 32, SpikeType.ELECTRIC));
+        
+        platforms.add(new Platform(490, 160, 70, 32, PlatformType.CRATE));
+        platforms.add(new Platform(600, 130, 90, 32, PlatformType.BRICK));
+        
+        // === PEAK PLATFORM ===
+        platforms.add(new Platform(720, 100, 100, 32, PlatformType.STONE));
+        spikes.add(new Spike(750, 68, 32, 32, SpikeType.POISON));
 
-        // Spikes on platforms
-        spikes.add(new Spike(350, 468, 32, 32));
-        spikes.add(new Spike(450, 468, 32, 32));
+        // === DESCENDING PATH - Right side ===
+        platforms.add(new Platform(820, 180, 80, 32, PlatformType.METAL));
+        platforms.add(new Platform(760, 250, 70, 32, PlatformType.CRATE));
+        spikes.add(new Spike(760, 218, 32, 32, SpikeType.NORMAL));
+        
+        platforms.add(new Platform(680, 320, 80, 32, PlatformType.BRICK));
+        platforms.add(new Platform(600, 380, 70, 32, PlatformType.STONE));
+        
+        // === FINAL DESCENT ===
+        platforms.add(new Platform(520, 440, 90, 32, PlatformType.METAL));
+        platforms.add(new Platform(420, 490, 100, 32, PlatformType.FLOOR));
+        spikes.add(new Spike(450, 458, 32, 32, SpikeType.BONE));
 
-        // Door at the end
-        door = new Door(700, 420, 50, 80);
+        // === FLOOR SPIKES - Punishment zone ===
+        for (int i = 0; i < 12; i++) {
+            spikes.add(new Spike(i * 40, 568, 32, 32, SpikeType.ICE));
+        }
+        
+        // === GAP HAZARDS ===
+        spikes.add(new Spike(330, 538, 32, 32, SpikeType.ELECTRIC));
+        spikes.add(new Spike(370, 538, 32, 32, SpikeType.ELECTRIC));
+
+        // === STARS - Strategic collection path ===
+        stars.add(new Star(200, 350, 32, 32));      // Star 1 - Easy first jump
+       stars.add(new Star(100, 350, 32, 32));      // Star 1 - Easy first jump
+        stars.add(new Star(610, 340, 32, 32));      // Star 6 - Mid descent
+
+        // === DOOR - Requires all 6 stars ===
+        door = new Door(440, 410, 50, 80);
 
         setImagesForObjects();
     }
@@ -48,19 +93,20 @@ public class Level2 extends Level {
 
         Rectangle playerBounds = player.getBounds();
 
-        // Platform collision (only when falling)
+        // Platform collision - only when falling
         for (Platform platform : platforms) {
             if (player.getVelocityY() > 0) {
                 double playerBottom = player.getY() + Player.HEIGHT;
                 double playerBottomPrev = playerBottom - player.getVelocityY();
 
-                Rectangle platBounds = platform.getBounds();
+                boolean horizontalOverlap = player.getX() + Player.WIDTH > platform.getBounds().x &&
+                                            player.getX() < platform.getBounds().x + platform.getBounds().width;
 
-                boolean horizontalOverlap = player.getX() + Player.WIDTH > platBounds.x &&
-                                            player.getX() < platBounds.x + platBounds.width;
+                if (horizontalOverlap &&
+                    playerBottomPrev <= platform.getBounds().y &&
+                    playerBottom >= platform.getBounds().y) {
 
-                if (horizontalOverlap && playerBottomPrev <= platBounds.y && playerBottom >= platBounds.y) {
-                    player.setY(platBounds.y - Player.HEIGHT);
+                    player.setY(platform.getBounds().y - Player.HEIGHT);
                     player.setOnGround(true);
                     break;
                 }
@@ -69,15 +115,33 @@ public class Level2 extends Level {
 
         // Spike collision
         for (Spike spike : spikes) {
-            if (checkCollision(playerBounds, spike.getHitbox())) {
+            Rectangle spikeHitbox = spike.getHitbox();
+
+            if (checkCollision(playerBounds, spikeHitbox)) {
                 player.die();
-                break;
             }
         }
 
+        // Star collection and door open
+        checkStarCollection();
+        checkDoorOpen();
+
         // Door collision
-        if (door != null && checkCollision(playerBounds, door.getBounds())) {
+        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is closed, player cannot pass
+            // Push player back or prevent movement
+            player.setX(player.getX() - player.getVelocityX());
+            player.setY(player.getY() - player.getVelocityY());
+            stuckTimer++;
+            if (stuckTimer >= 300) { // 5 seconds at 60 FPS
+                player.die();
+                stuckTimer = 0;
+            }
+        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is open, player can pass to next level
             completed = true;
+        } else {
+            stuckTimer = 0; // Reset timer if not touching closed door
         }
 
         // Fall off screen
@@ -87,43 +151,7 @@ public class Level2 extends Level {
     }
 
     @Override
-    public void render(Graphics2D g) {
-        // Draw platforms
-        g.setColor(new Color(100, 100, 100));
-        for (Platform platform : platforms) {
-            Rectangle bounds = platform.getBounds();
-            g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-            g.setColor(Color.DARK_GRAY);
-            g.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
-            g.setColor(new Color(100, 100, 100));
-        }
-
-        // Draw spikes
-        for (Spike spike : spikes) {
-            Rectangle bounds = spike.getBounds();
-            if (spikeImg != null) {
-                g.drawImage(spikeImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
-            } else {
-                g.setColor(Color.RED);
-                int[] xPoints = {bounds.x, bounds.x + bounds.width / 2, bounds.x + bounds.width};
-                int[] yPoints = {bounds.y + bounds.height, bounds.y, bounds.y + bounds.height};
-                g.fillPolygon(xPoints, yPoints, 3);
-            }
-        }
-
-        // Draw door
-        if (doorImg != null) {
-            g.drawImage(doorImg, door.getBounds().x, door.getBounds().y,
-                        door.getBounds().width, door.getBounds().height, null);
-        } else {
-            g.setColor(Color.GREEN);
-            Rectangle bounds = door.getBounds();
-            g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-        }
-    }
-
-    @Override
     public void reset() {
-        completed = false;
+        super.reset();
     }
 }

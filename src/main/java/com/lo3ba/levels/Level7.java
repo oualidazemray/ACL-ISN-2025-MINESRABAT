@@ -3,8 +3,11 @@ package com.lo3ba.levels;
 import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
 import com.lo3ba.gameobjects.Platform;
+import com.lo3ba.gameobjects.Platform.PlatformType;
 import com.lo3ba.gameobjects.Spike;
+import com.lo3ba.gameobjects.Spike.SpikeType;
 import com.lo3ba.gameobjects.Door;
+import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -24,32 +27,36 @@ public class Level7 extends Level {
         spikes.clear();
 
         // === START AREA ===
-        platforms.add(new Platform(0, 500, 150, 100)); // Starting platform
+        platforms.add(new Platform(0, 500, 150, 32, PlatformType.FLOOR)); // Starting platform
 
         // === MAZE-LIKE STRUCTURE ===
-        platforms.add(new Platform(200, 450, 150, 20));
-        spikes.add(new Spike(250, 418, 32, 32));
+        platforms.add(new Platform(200, 450, 150, 32, PlatformType.CRATE));
+        spikes.add(new Spike(250, 418, 32, 32, SpikeType.NORMAL));
 
         // Vertical wall (obstacle)
-        platforms.add(new Platform(400, 200, 20, 300));
+        platforms.add(new Platform(400, 200, 20, 300, PlatformType.STONE));
 
         // === UPPER SECTION ===
-        platforms.add(new Platform(200, 250, 180, 20));
-        spikes.add(new Spike(300, 218, 32, 32));
+        platforms.add(new Platform(200, 250, 180, 32, PlatformType.METAL));
+        spikes.add(new Spike(300, 218, 32, 32, SpikeType.FIRE));
 
         // === DROP DOWN SECTION ===
-        platforms.add(new Platform(450, 350, 100, 20));
-        spikes.add(new Spike(450, 318, 32, 32));
-        spikes.add(new Spike(518, 318, 32, 32));
+        platforms.add(new Platform(450, 350, 100, 32, PlatformType.BRICK));
+        spikes.add(new Spike(450, 318, 32, 32, SpikeType.POISON));
+        spikes.add(new Spike(518, 318, 32, 32, SpikeType.ELECTRIC));
 
-        platforms.add(new Platform(600, 450, 100, 20));
+        platforms.add(new Platform(600, 450, 100, 32, PlatformType.CRATE));
 
         // === FINAL PLATFORM ===
-        platforms.add(new Platform(650, 500, 150, 100));
+        platforms.add(new Platform(650, 500, 150, 32, PlatformType.FLOOR));
+
+        // === CEILING SPIKES ===
+        spikes.add(new Spike(100, 0, 32, 32, SpikeType.ICE));
+        spikes.add(new Spike(350, 0, 32, 32, SpikeType.BONE));
 
         // === SCATTERED FLOOR SPIKES ===
-        spikes.add(new Spike(150, 568, 32, 32));
-        spikes.add(new Spike(550, 568, 32, 32));
+        spikes.add(new Spike(150, 568, 32, 32, SpikeType.ELECTRIC));
+        spikes.add(new Spike(550, 568, 32, 32, SpikeType.POISON));
 
         // === DOOR ===
         door = new Door(730, 420, 50, 80);
@@ -91,8 +98,18 @@ public class Level7 extends Level {
             }
         }
 
-        // === DOOR COLLISION ===
-        if (checkCollision(playerBounds, door.getBounds())) {
+        // Star collection and door open
+        checkStarCollection();
+        checkDoorOpen();
+
+        // Door collision
+        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is closed, player cannot pass
+            // Push player back or prevent movement
+            player.setX(player.getX() - player.getVelocityX());
+            player.setY(player.getY() - player.getVelocityY());
+        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+            // Door is open, player can pass to next level
             completed = true;
         }
 
@@ -124,10 +141,7 @@ public class Level7 extends Level {
         }
 
         // === DOOR ===
-        if (doorImg != null) {
-            g.drawImage(doorImg, door.getBounds().x, door.getBounds().y,
-                        door.getBounds().width, door.getBounds().height, null);
-        }
+        door.render(g);
     }
 
     @Override

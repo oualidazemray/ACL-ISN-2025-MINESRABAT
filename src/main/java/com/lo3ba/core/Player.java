@@ -153,8 +153,9 @@ public class Player {
     public double getY() { return y; }
     public void setX(double x) { this.x = x; }
     public void setY(double y) { this.y = y; }
-    public double getVelocityY() { return velocityY; }
-    public void setVelocityY(double velocityY) { this.velocityY = velocityY; }
+public double getVelocityY() { return velocityY; }
+public double getVelocityX() { return velocityX; }
+public void setVelocityY(double velocityY) { this.velocityY = velocityY; }
     public boolean isOnGround() { return onGround; }
     public boolean isDead() { return dead; }
     public int getDeathTimer() { return deathTimer; }
