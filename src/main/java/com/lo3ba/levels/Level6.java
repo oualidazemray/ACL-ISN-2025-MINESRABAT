@@ -15,18 +15,19 @@ import java.util.List;
 
 public class Level6 extends Level {
 
-    public Level6(Player player) {
+      public Level6(Player player) {
         super(player);
         spawnX = 50;
-        spawnY = 400; // Player starts near bottom-left area
+        spawnY = 400;
         init();
     }
+
     @Override
     public void init() {
         platforms.clear();
         spikes.clear();
-
-        // === START AREA ===
+        stars.clear();
+   // === START AREA ===
         platforms.add(new Platform(0, 450, 150, 100)); // Safe spawn platform
 
         // === ASCENDING SECTION ===
@@ -63,43 +64,37 @@ public class Level6 extends Level {
 
         // === DOOR ===
         door = new Door(350, 440, 50, 80);
-
         setImagesForObjects();
     }
 
     @Override
     public void update() {
         completed = false;
+
         Rectangle playerBounds = player.getBounds();
 
-        // === PLATFORM COLLISION ===
+        // Platform collision - only when falling
         for (Platform platform : platforms) {
-            Rectangle platBounds = platform.getBounds();
-
             if (player.getVelocityY() > 0) {
                 double playerBottom = player.getY() + Player.HEIGHT;
                 double playerBottomPrev = playerBottom - player.getVelocityY();
 
-                if (player.getX() + Player.WIDTH > platBounds.x &&
-                    player.getX() < platBounds.x + platBounds.width) {
+                boolean horizontalOverlap = player.getX() + Player.WIDTH > platform.getBounds().x &&
+                                            player.getX() < platform.getBounds().x + platform.getBounds().width;
 
-                    if (playerBottomPrev <= platBounds.y && playerBottom >= platBounds.y) {
-                        player.setY(platBounds.y - Player.HEIGHT);
-                        player.setOnGround(true);
-                        break;
-                    }
+                if (horizontalOverlap &&
+                    playerBottomPrev <= platform.getBounds().y &&
+                    playerBottom >= platform.getBounds().y) {
+
+                    player.setY(platform.getBounds().y - Player.HEIGHT);
+                    player.setOnGround(true);
+                    break;
                 }
             }
         }
 
-        // === SPIKE COLLISION ===
-        for (Spike spike : spikes) {
-            Rectangle spikeHitbox = spike.getHitbox();
-
-            if (checkCollision(playerBounds, spikeHitbox)) {
-                player.die();
-            }
-        }
+        // Spike collision
+        checkSpikeCollision();
 
         // Star collection and door open
         checkStarCollection();
@@ -111,44 +106,28 @@ public class Level6 extends Level {
             // Push player back or prevent movement
             player.setX(player.getX() - player.getVelocityX());
             player.setY(player.getY() - player.getVelocityY());
+            stuckTimer++;
+            if (stuckTimer >= 300) { // 5 seconds at 60 FPS
+                // Reset level: reposition player to initial place with 0 stars collected
+                player.reset(spawnX, spawnY);
+                super.reset(); // Reset stars
+                stuckTimer = 0;
+            }
         } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
             // Door is open, player can pass to next level
             completed = true;
+        } else {
+            stuckTimer = 0; // Reset timer if not touching closed door
         }
 
-        // === OUT OF BOUNDS ===
+        // Fall off screen
         if (player.getY() > GameLoop.BASE_HEIGHT + 50) {
             player.die();
         }
     }
 
     @Override
-    public void render(Graphics2D g) {
-        // === PLATFORMS ===
-        g.setColor(new Color(100, 100, 100));
-        for (Platform platform : platforms) {
-            g.fillRect(platform.getBounds().x, platform.getBounds().y,
-                       platform.getBounds().width, platform.getBounds().height);
-            g.setColor(Color.DARK_GRAY);
-            g.drawRect(platform.getBounds().x, platform.getBounds().y,
-                       platform.getBounds().width, platform.getBounds().height);
-            g.setColor(new Color(100, 100, 100));
-        }
-
-        // === SPIKES ===
-        for (Spike spike : spikes) {
-            if (spikeImg != null) {
-                g.drawImage(spikeImg, spike.getBounds().x, spike.getBounds().y,
-                            spike.getBounds().width, spike.getBounds().height, null);
-            }
-        }
-
-        // === DOOR ===
-        door.render(g);
-    }
-
-    @Override
     public void reset() {
-        completed = false;
+        super.reset();
     }
 }

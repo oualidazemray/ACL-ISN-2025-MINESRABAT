@@ -76,40 +76,37 @@ public class Level10 extends Level {
 
         // === DOOR ===
         door = new Door(730, 370, 50, 80);
-
         setImagesForObjects();
     }
 
     @Override
     public void update() {
         completed = false;
+
         Rectangle playerBounds = player.getBounds();
 
-        // === PLATFORM COLLISION ===
+        // Platform collision - only when falling
         for (Platform platform : platforms) {
-            Rectangle platBounds = platform.getBounds();
             if (player.getVelocityY() > 0) {
                 double playerBottom = player.getY() + Player.HEIGHT;
                 double playerBottomPrev = playerBottom - player.getVelocityY();
 
-                if (player.getX() + Player.WIDTH > platBounds.x &&
-                    player.getX() < platBounds.x + platBounds.width) {
+                boolean horizontalOverlap = player.getX() + Player.WIDTH > platform.getBounds().x &&
+                                            player.getX() < platform.getBounds().x + platform.getBounds().width;
 
-                    if (playerBottomPrev <= platBounds.y && playerBottom >= platBounds.y) {
-                        player.setY(platBounds.y - Player.HEIGHT);
-                        player.setOnGround(true);
-                    }
+                if (horizontalOverlap &&
+                    playerBottomPrev <= platform.getBounds().y &&
+                    playerBottom >= platform.getBounds().y) {
+
+                    player.setY(platform.getBounds().y - Player.HEIGHT);
+                    player.setOnGround(true);
+                    break;
                 }
             }
         }
 
-        // === SPIKE COLLISION ===
-        for (Spike spike : spikes) {
-            Rectangle spikeHitbox = spike.getHitbox();
-            if (checkCollision(playerBounds, spikeHitbox)) {
-                player.die();
-            }
-        }
+        // Spike collision
+        checkSpikeCollision();
 
         // Star collection and door open
         checkStarCollection();
@@ -121,58 +118,28 @@ public class Level10 extends Level {
             // Push player back or prevent movement
             player.setX(player.getX() - player.getVelocityX());
             player.setY(player.getY() - player.getVelocityY());
+            stuckTimer++;
+            if (stuckTimer >= 300) { // 5 seconds at 60 FPS
+                // Reset level: reposition player to initial place with 0 stars collected
+                player.reset(spawnX, spawnY);
+                super.reset(); // Reset stars
+                stuckTimer = 0;
+            }
         } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
             // Door is open, player can pass to next level
             completed = true;
+        } else {
+            stuckTimer = 0; // Reset timer if not touching closed door
         }
 
-        // === FALL OFF SCREEN ===
+        // Fall off screen
         if (player.getY() > GameLoop.BASE_HEIGHT + 50) {
             player.die();
         }
     }
 
     @Override
-    public void render(Graphics2D g) {
-        // === BACKGROUND EFFECT ===
-        g.setColor(new Color(80, 0, 0, 30));
-        g.fillRect(0, 0, GameLoop.WIDTH, GameLoop.HEIGHT);
-
-        // === PLATFORMS ===
-        g.setColor(new Color(120, 100, 100));
-        for (Platform platform : platforms) {
-            g.fillRect(platform.getBounds().x, platform.getBounds().y,
-                       platform.getBounds().width, platform.getBounds().height);
-            g.setColor(new Color(150, 50, 50));
-            g.drawRect(platform.getBounds().x, platform.getBounds().y,
-                       platform.getBounds().width, platform.getBounds().height);
-            g.setColor(new Color(120, 100, 100));
-        }
-
-        // === SPIKES ===
-        for (Spike spike : spikes) {
-            if (spikeImg != null) {
-                g.drawImage(spikeImg, spike.getBounds().x, spike.getBounds().y,
-                            spike.getBounds().width, spike.getBounds().height, null);
-            } else {
-                g.setColor(new Color(200, 0, 0));
-                int[] xPoints = {spike.getBounds().x, spike.getBounds().x + spike.getBounds().width / 2, spike.getBounds().x + spike.getBounds().width};
-                int[] yPoints = {spike.getBounds().y + spike.getBounds().height, spike.getBounds().y, spike.getBounds().y + spike.getBounds().height};
-                g.fillPolygon(xPoints, yPoints, 3);
-            }
-        }
-
-        // === DOOR ===
-        door.render(g);
-
-        // === FINAL LEVEL TITLE ===
-        g.setColor(Color.YELLOW);
-        g.setFont(new Font("Arial", Font.BOLD, 16));
-        g.drawString("FINAL LEVEL!", 350, 30);
-    }
-
-    @Override
     public void reset() {
-        completed = false;
+        super.reset();
     }
 }

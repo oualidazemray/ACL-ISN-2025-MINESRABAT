@@ -114,13 +114,7 @@ public class Level2 extends Level {
         }
 
         // Spike collision
-        for (Spike spike : spikes) {
-            Rectangle spikeHitbox = spike.getHitbox();
-
-            if (checkCollision(playerBounds, spikeHitbox)) {
-                player.die();
-            }
-        }
+        checkSpikeCollision();
 
         // Star collection and door open
         checkStarCollection();

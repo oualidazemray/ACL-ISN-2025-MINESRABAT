@@ -361,6 +361,12 @@ public class GameLoop extends JPanel {
         g2d.setColor(Color.YELLOW);
         g2d.drawString("STARS: " + levelManager.getCurrentLevel().getCollectedStars() + " / " + levelManager.getCurrentLevel().getTotalStars(), 10, 90);
 
+        // HP counter with shadow
+        g2d.setColor(Color.BLACK);
+        g2d.drawString("HP: " + player.getHealth(), 12, 112);
+        g2d.setColor(Color.GREEN);
+        g2d.drawString("HP: " + player.getHealth(), 10, 110);
+
         // Stuck timer with shadow (only show if stuck)
         int stuckTimer = levelManager.getCurrentLevel().getStuckTimer();
         if (stuckTimer > 0) {

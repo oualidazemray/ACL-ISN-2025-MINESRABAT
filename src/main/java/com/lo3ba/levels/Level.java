@@ -136,13 +136,13 @@ public int getCollectedStars() {
 
     protected int getSpikeDamage(Spike.SpikeType type) {
         switch (type) {
-            case NORMAL: return 10;
-            case FIRE: return 20;
-            case POISON: return 15;
-            case ELECTRIC: return 25;
-            case BONE: return 12;
-            case ICE: return 8;
-            default: return 10;
+            case NORMAL: return 1;
+            case FIRE: return 3;
+            case POISON: return 8;
+            case ELECTRIC: return 4;
+            case BONE: return 4;
+            case ICE: return 2;
+            default: return 1;
         }
     }
 
@@ -158,6 +158,19 @@ public int getCollectedStars() {
     protected void checkDoorOpen() {
         if (getCollectedStars() >= requiredStars && door != null && !door.isOpen()) {
             door.open();
+        }
+    }
+
+    public void checkSpikeCollision() {
+        Rectangle playerBounds = player.getBounds();
+        for (Spike spike : spikes) {
+            Rectangle spikeHitbox = spike.getHitbox();
+            if (checkCollision(playerBounds, spikeHitbox)) {
+                player.takeDamage(getSpikeDamage(spike.getType()));
+                if (player.getHealth() <= 0) {
+                    player.die();
+                }
+            }
         }
     }
 

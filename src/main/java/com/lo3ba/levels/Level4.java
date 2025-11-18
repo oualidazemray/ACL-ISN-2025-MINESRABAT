@@ -18,7 +18,7 @@ public class Level4 extends Level {
       public Level4(Player player) {
         super(player);
         spawnX = 50;
-        spawnY = 450;
+        spawnY = 400;
         init();
     }
 
@@ -28,6 +28,7 @@ public class Level4 extends Level {
         spikes.clear();
         stars.clear();
 
+     
       // === THEME: "SPIKE MAZE" - Navigate through spike corridors ===
 
         // === START AND END SAFE ZONES ===
@@ -93,11 +94,6 @@ public class Level4 extends Level {
 
         // === DOOR - Requires all 10 stars ===
         door = new Door(820, 420, 50, 80);
-
-        requiredStars = 6; // Set required stars for door to open
-
-
-
         setImagesForObjects();
     }
 
@@ -128,13 +124,7 @@ public class Level4 extends Level {
         }
 
         // Spike collision
-        for (Spike spike : spikes) {
-            Rectangle spikeHitbox = spike.getHitbox();
-
-            if (checkCollision(playerBounds, spikeHitbox)) {
-                player.die();
-            }
-        }
+        checkSpikeCollision();
 
         // Star collection and door open
         checkStarCollection();
@@ -146,9 +136,18 @@ public class Level4 extends Level {
             // Push player back or prevent movement
             player.setX(player.getX() - player.getVelocityX());
             player.setY(player.getY() - player.getVelocityY());
+            stuckTimer++;
+            if (stuckTimer >= 300) { // 5 seconds at 60 FPS
+                // Reset level: reposition player to initial place with 0 stars collected
+                player.reset(spawnX, spawnY);
+                super.reset(); // Reset stars
+                stuckTimer = 0;
+            }
         } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
             // Door is open, player can pass to next level
             completed = true;
+        } else {
+            stuckTimer = 0; // Reset timer if not touching closed door
         }
 
         // Fall off screen
