@@ -134,7 +134,9 @@ public class Level2 extends Level {
             player.setY(player.getY() - player.getVelocityY());
             stuckTimer++;
             if (stuckTimer >= 300) { // 5 seconds at 60 FPS
-                player.die();
+                // Reset level: reposition player to initial place with 0 stars collected
+                player.reset(spawnX, spawnY);
+                super.reset(); // Reset stars
                 stuckTimer = 0;
             }
         } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {

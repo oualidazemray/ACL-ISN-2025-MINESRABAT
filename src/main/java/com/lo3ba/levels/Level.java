@@ -134,6 +134,18 @@ public int getCollectedStars() {
         return a.intersects(b);
     }
 
+    protected int getSpikeDamage(Spike.SpikeType type) {
+        switch (type) {
+            case NORMAL: return 10;
+            case FIRE: return 20;
+            case POISON: return 15;
+            case ELECTRIC: return 25;
+            case BONE: return 12;
+            case ICE: return 8;
+            default: return 10;
+        }
+    }
+
     protected void checkStarCollection() {
         Rectangle playerBounds = player.getBounds();
         for (Star star : stars) {

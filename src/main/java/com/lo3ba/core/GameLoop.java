@@ -361,6 +361,16 @@ public class GameLoop extends JPanel {
         g2d.setColor(Color.YELLOW);
         g2d.drawString("STARS: " + levelManager.getCurrentLevel().getCollectedStars() + " / " + levelManager.getCurrentLevel().getTotalStars(), 10, 90);
 
+        // Stuck timer with shadow (only show if stuck)
+        int stuckTimer = levelManager.getCurrentLevel().getStuckTimer();
+        if (stuckTimer > 0) {
+            int remainingSeconds = (300 - stuckTimer) / 60 + 1; // Approximate remaining seconds
+            g2d.setColor(Color.BLACK);
+            g2d.drawString("STUCK: " + remainingSeconds + "s", 12, 122);
+            g2d.setColor(Color.RED);
+            g2d.drawString("STUCK: " + remainingSeconds + "s", 10, 120);
+        }
+
         if (player.isDead()) {
             // Draw "YOU DIED!" with retro style
             Font bigFont = retroFont.deriveFont(32f);

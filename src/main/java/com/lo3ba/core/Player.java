@@ -25,6 +25,7 @@ public class Player {
     private boolean dead = false;
     private int deathTimer = 0;
     private int deaths = 0; // The internal counter field
+    private int health = 100; // Player health
     
     private BufferedImage sprite;
     private Clip jumpSound;
@@ -120,6 +121,13 @@ public class Player {
         }
     }
     
+    public void takeDamage(int damage) {
+        health -= damage;
+        if (health <= 0) {
+            die();
+        }
+    }
+
     public void die() {
         if (!dead) {
             dead = true;
@@ -137,6 +145,7 @@ public class Player {
     dead = false;
     deathTimer = 0;
     onGround = false;
+    health = 100; // Reset health on level reset
 }
     
     public void render(Graphics2D g) {
@@ -161,8 +170,10 @@ public void setVelocityY(double velocityY) { this.velocityY = velocityY; }
     public int getDeathTimer() { return deathTimer; }
     
     // Corrected getter name to match Level1.java UI call
-    public int getDeathCount() { return deaths; } 
-    
+    public int getDeathCount() { return deaths; }
+
+    public int getHealth() { return health; }
+
     // Reuse the bounds rectangle instead of allocating a new one each frame
     public Rectangle getBounds() {
         bounds.setBounds((int)x, (int)y, WIDTH, HEIGHT);
