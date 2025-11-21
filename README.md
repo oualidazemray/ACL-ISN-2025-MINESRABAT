@@ -65,7 +65,6 @@ java -cp target/classes com.lo3ba.Main
 - Take your time on narrow platforms
 - Watch for spikes on platforms
 - Use momentum for longer jumps
-- Practice makes perfect - don't give up!
 
 ## Project Structure
 
