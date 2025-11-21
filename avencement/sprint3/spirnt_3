@@ -1,6 +1,11 @@
+
+Objectif sprint 3:
 -	Écrans de fin et interface de victoire 
 -	Objets à collecter (star) a chaque niveau y a un nbr de star a collecter pour que la porte s’ouvrir (il faut collecter tous les stars existent dans un niveau pour passer au suivant ) 
 -	Système de score (les stars /au temps du jeu )
 -	Ajouter des nouveaux obstacles (pi)
--
--
+- Diagramme de Classe
+
+Ce qui n'est pas fait :
+-Écrans de fin et interface de victoire (en cours)
+-Un petir decalage au niveau du joueur sur les platfromes
