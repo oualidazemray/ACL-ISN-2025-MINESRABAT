@@ -1,11 +1,10 @@
 package com.lo3ba.core;
 
 import com.lo3ba.levels.*;
-import javax.imageio.ImageIO;
-import java.io.InputStream;
+import com.lo3ba.util.ResourceManager;
 
 import javax.sound.sampled.*;
-import java.awt.*;
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -48,27 +47,14 @@ public class LevelManager {
     }
     
     private void loadSounds() {
-    try {
-        InputStream ais = getClass().getClassLoader().getResourceAsStream("assets/sounds/door.wav");
-        if (ais != null) {
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(ais);
-            doorSound = AudioSystem.getClip();
-            doorSound.open(audioStream);
-        } else {
-            System.err.println("⚠ Sound file not found: assets/sounds/door.wav");
-        }
-    } catch (Exception e) {
-        System.err.println("⚠ Could not load sound (this is optional, game will continue): " + e.getMessage());
+        doorSound = ResourceManager.loadSound("door.wav");
     }
-}
     
     public void update() {
         Level currentLevel = levels[currentLevelIndex];
         currentLevel.update();
         
-        if (currentLevel.isCompleted()) {
-            nextLevel();
-        }
+        // Auto-advancement removed. GameLoop handles this now.
     }
     
     public void nextLevel() {

@@ -1,7 +1,7 @@
 package com.lo3ba.levels;
 
-import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
+import com.lo3ba.util.ScaleManager;
 import com.lo3ba.gameobjects.Platform;
 import com.lo3ba.gameobjects.Platform.PlatformType;
 import com.lo3ba.gameobjects.Spike;
@@ -10,9 +10,13 @@ import com.lo3ba.gameobjects.Door;
 import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * LEVEL 1: TUTORIAL VALLEY
+ * Theme: Gentle introduction to basic mechanics
+ * Difficulty: Easy
+ * Focus: Basic movement, jumping, star collection
+ */
 public class Level1 extends Level {
 
     public Level1(Player player) {
@@ -28,97 +32,47 @@ public class Level1 extends Level {
         spikes.clear();
         stars.clear();
 
-        requiredStars = 2; // 2 stars to open door
+        requiredStars = 3; // Collect 3 stars to open door
 
-      // === MAIN FLOOR - Split with dangerous gap ===
-        platforms.add(new Platform(0, 500, 320, 100, PlatformType.FLOOR));
-        platforms.add(new Platform(520, 500, 480, 100, PlatformType.FLOOR));
-
-        // === STARTING AREA - Tutorial section ===
-        platforms.add(new Platform(180, 420, 100, 32, PlatformType.STONE));
+        // === TUTORIAL SECTION: SAFE ZONE ===
+        // Main floor - safe starting area
+        platforms.add(new Platform(0, 500, 400, 100, PlatformType.FLOOR));
         
-        // === FIRST CHALLENGE - Climb up ===
-        platforms.add(new Platform(320, 360, 80, 32, PlatformType.CRATE));
-        platforms.add(new Platform(240, 290, 80, 32, PlatformType.METAL));
+        // First jump tutorial - simple step up
+        platforms.add(new Platform(200, 440, 120, 32, PlatformType.STONE));
         
-        // === FLOATING PLATFORMS - Gap crossing ===
-        platforms.add(new Platform(380, 330, 70, 32, PlatformType.BRICK));
-        platforms.add(new Platform(480, 380, 80, 32, PlatformType.METAL));
+        // Second platform - teaches jumping distance
+        platforms.add(new Platform(360, 380, 100, 32, PlatformType.CRATE));
         
-        // === LANDING ZONE ===
-        platforms.add(new Platform(600, 420, 100, 32, PlatformType.STONE));
+        // === MID SECTION: SAFE PLATFORMING ===
+        // Descending platforms
+        platforms.add(new Platform(500, 420, 100, 32, PlatformType.BRICK));
+        platforms.add(new Platform(640, 460, 120, 32, PlatformType.METAL));
         
-        // === FINAL PLATFORM - Door area ===
-        platforms.add(new Platform(720, 350, 120, 32, PlatformType.CRATE));
-
-        // === SPIKE HAZARDS - Gap floor ===
-        for (int i = 0; i < 7; i++) {
-            spikes.add(new Spike(320 + i * 32, 468, 32, 32, SpikeType.ELECTRIC));
-        }
+        // === FINAL SECTION: LEVEL EXIT ===
+        // Landing platform before door
+        platforms.add(new Platform(800, 400, 150, 32, PlatformType.STONE));
         
-        // === PLATFORM HAZARDS - Adds risk to jumps ===
-        spikes.add(new Spike(350, 328, 32, 32, SpikeType.FIRE));
-        spikes.add(new Spike(510, 348, 32, 32, SpikeType.NORMAL));
+        // === GENTLE HAZARD INTRODUCTION ===
+        // A few safe spikes to show they exist (not in player's path)
+        spikes.add(new Spike(420, 568, 32, 32, SpikeType.NORMAL));
+        spikes.add(new Spike(452, 568, 32, 32, SpikeType.NORMAL));
+        spikes.add(new Spike(484, 568, 32, 32, SpikeType.NORMAL));
 
-        // === STARS - Strategic placement ===
-        stars.add(new Star(210, 410, 32, 32));      // Star 1 - Easy warmup
+        // === STAR PLACEMENT ===
+        stars.add(new Star(250, 400, 32, 32));      // Star 1 - On first platform (easy)
+        stars.add(new Star(390, 340, 32, 32));      // Star 2 - Above second platform (teaches jumping)
+        stars.add(new Star(660, 420, 32, 32));      // Star 3 - On descending path
 
-        stars.add(new Star(750, 310, 32, 32));      // Star 4 - Near door
-
-        // === DOOR - Requires all 4 stars ===
-        door = new Door(770, 270, 50, 80);
+        // === DOOR (EXIT) ===
+        door = new Door(870, 320, 50, 80);
 
         setImagesForObjects();
     }
 
     @Override
     public void update() {
-        completed = false;
-
-        Rectangle playerBounds = player.getBounds();
-
-        // Platform collision - only when falling
-        for (Platform platform : platforms) {
-            if (player.getVelocityY() > 0) {
-                double playerBottom = player.getY() + Player.HEIGHT;
-                double playerBottomPrev = playerBottom - player.getVelocityY();
-
-                boolean horizontalOverlap = player.getX() + Player.WIDTH > platform.getBounds().x &&
-                                            player.getX() < platform.getBounds().x + platform.getBounds().width;
-
-                if (horizontalOverlap &&
-                    playerBottomPrev <= platform.getBounds().y &&
-                    playerBottom >= platform.getBounds().y) {
-
-                    player.setY(platform.getBounds().y - Player.HEIGHT);
-                    player.setOnGround(true);
-                    break;
-                }
-            }
-        }
-
-        // Spike collision
-        checkSpikeCollision();
-
-        // Star collection and door open
-        checkStarCollection();
-        checkDoorOpen();
-
-        // Door collision
-        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
-            // Door is closed, player cannot pass
-            // Push player back or prevent movement
-            player.setX(player.getX() - player.getVelocityX());
-            player.setY(player.getY() - player.getVelocityY());
-        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
-            // Door is open, player can pass to next level
-            completed = true;
-        }
-
-        // Fall off screen
-        if (player.getY() > GameLoop.BASE_HEIGHT + 50) {
-            player.die();
-        }
+        standardUpdate();
     }
 
     @Override

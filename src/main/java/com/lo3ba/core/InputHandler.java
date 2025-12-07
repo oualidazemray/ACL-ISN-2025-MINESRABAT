@@ -4,11 +4,13 @@ import java.awt.event.KeyEvent;
 
 public class InputHandler {
     private Player player;
+    private LevelManager levelManager;
     private boolean leftPressed = false;
     private boolean rightPressed = false;
     
-    public InputHandler(Player player) {
+    public InputHandler(Player player, LevelManager levelManager) {
         this.player = player;
+        this.levelManager = levelManager;
     }
     
     public void keyPressed(KeyEvent e) {
@@ -31,6 +33,12 @@ public class InputHandler {
             case KeyEvent.VK_UP:
             case KeyEvent.VK_W:
                 player.jump();
+                break;
+                
+            case KeyEvent.VK_E:
+                if (levelManager != null && levelManager.getCurrentLevel() != null) {
+                    levelManager.getCurrentLevel().tryUseBomb();
+                }
                 break;
         }
     }

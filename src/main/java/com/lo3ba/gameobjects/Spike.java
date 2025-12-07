@@ -1,10 +1,9 @@
 package com.lo3ba.gameobjects;
 
+import com.lo3ba.util.ResourceManager;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 
 public class Spike {
     // Enum for different spike types
@@ -31,50 +30,13 @@ public class Spike {
     private static BufferedImage boneSpike;
 
     static {
-        try {
-            String basePath = "C:\\Users\\khalil\\Documents\\GitHub\\ACL-ISN-2025-MINESRABAT\\src\\main\\resources\\assets\\textures\\";
-            
-            // Try to load spike textures (optional - will use fallback if not found)
-            try {
-                normalSpike = ImageIO.read(new File(basePath + "spike_normal_32x32.png"));
-            } catch (IOException e) {
-                System.out.println("Normal spike texture not found, will use fallback");
-            }
-            
-            try {
-                iceSpike = ImageIO.read(new File(basePath + "spike_ice_32x32.png"));
-            } catch (IOException e) {
-                System.out.println("Ice spike texture not found, will use fallback");
-            }
-            
-            try {
-                fireSpike = ImageIO.read(new File(basePath + "spike_fire_32x32.png"));
-            } catch (IOException e) {
-                System.out.println("Fire spike texture not found, will use fallback");
-            }
-            
-            try {
-                poisonSpike = ImageIO.read(new File(basePath + "spike_poison_32x32.png"));
-            } catch (IOException e) {
-                System.out.println("Poison spike texture not found, will use fallback");
-            }
-            
-            try {
-                electricSpike = ImageIO.read(new File(basePath + "spike_electric_32x32.png"));
-            } catch (IOException e) {
-                System.out.println("Electric spike texture not found, will use fallback");
-            }
-            
-            try {
-                boneSpike = ImageIO.read(new File(basePath + "spike_bone_32x32.png"));
-            } catch (IOException e) {
-                System.out.println("Bone spike texture not found, will use fallback");
-            }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("⚠️ Failed to load spike textures. Using fallback rendering.");
-        }
+        // Load spike textures using ResourceManager for proper classpath loading
+        normalSpike = ResourceManager.loadTexture("spike_normal_32x32.png");
+        iceSpike = ResourceManager.loadTexture("spike_ice_32x32.png");
+        fireSpike = ResourceManager.loadTexture("spike_fire_32x32.png");
+        poisonSpike = ResourceManager.loadTexture("spike_poison_32x32.png");
+        electricSpike = ResourceManager.loadTexture("spike_electric_32x32.png");
+        boneSpike = ResourceManager.loadTexture("spike_bone_32x32.png");
     }
 
     /**

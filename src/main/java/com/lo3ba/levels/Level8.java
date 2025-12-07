@@ -1,93 +1,126 @@
 package com.lo3ba.levels;
 
-import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
+import com.lo3ba.util.ScaleManager;
 import com.lo3ba.gameobjects.Platform;
 import com.lo3ba.gameobjects.Platform.PlatformType;
+import com.lo3ba.gameobjects.MovingPlatform;
 import com.lo3ba.gameobjects.Spike;
 import com.lo3ba.gameobjects.Spike.SpikeType;
+import com.lo3ba.gameobjects.Checkpoint;
 import com.lo3ba.gameobjects.Door;
 import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
-
+/**
+ * LEVEL 8: LAVA FACTORY
+ * Theme: Dense spike patterns with timing challenges
+ * Difficulty: Very Hard
+ * Focus: Complex patterns and precise timing
+ */
 public class Level8 extends Level {
 
     public Level8(Player player) {
         super(player);
         spawnX = 50;
-        spawnY = 400;
+        spawnY = 458; // Fixed: platform at Y=500, player HEIGHT=42, spawn at 500-42=458
         init();
     }
 
     @Override
     public void init() {
         platforms.clear();
+        movingPlatforms.clear();
         spikes.clear();
+        stars.clear();
 
-        // === START PLATFORM ===
-        platforms.add(new Platform(0, 450, 150, 32, PlatformType.FLOOR));
+        requiredStars = 7;
 
-        // === FIRST SECTION ===
-        platforms.add(new Platform(200, 400, 80, 32, PlatformType.CRATE));
-        spikes.add(new Spike(260, 368, 32, 32, SpikeType.NORMAL));
+        // === ENTRANCE ===
+        platforms.add(new Platform(0, 500, 130, 100, PlatformType.FLOOR));
+        
+        // === LAVA PIT CROSSING ===
+        platforms.add(new Platform(170, 450, 60, 32, PlatformType.METAL));
+        spikes.add(new Spike(245, 418, 32, 32, SpikeType.FIRE));
+        
+        platforms.add(new Platform(290, 420, 55, 32, PlatformType.STONE));
+        spikes.add(new Spike(315, 388, 32, 32, SpikeType.FIRE));  // Keep only 1
+        
+        // === FACTORY MACHINERY - MOVING PLATFORMS ===
+        movingPlatforms.add(new MovingPlatform(380, 390, 480, 390, 70, 32, 2.0, PlatformType.METAL));
+        movingPlatforms.add(new MovingPlatform(520, 320, 520, 240, 70, 32, 1.8, PlatformType.STONE));
+        
+        // === UPPER FACTORY ===
+        platforms.add(new Platform(360, 260, 80, 32, PlatformType.BRICK));
+        spikes.add(new Spike(395, 228, 32, 32, SpikeType.ELECTRIC));  // Keep only 1
+        
+        platforms.add(new Platform(490, 180, 75, 32, PlatformType.CRATE));
+        platforms.add(new Platform(620, 210, 80, 32, PlatformType.METAL));
+        spikes.add(new Spike(640, 178, 32, 32, SpikeType.FIRE));
+        
+        // === FURNACE SECTION ===
+        platforms.add(new Platform(730, 280, 70, 32, PlatformType.STONE));
+        spikes.add(new Spike(760, 248, 32, 32, SpikeType.FIRE));  // Keep only 1
+        
+        platforms.add(new Platform(660, 360, 80, 32, PlatformType.BRICK));
+        platforms.add(new Platform(790, 420, 75, 32, PlatformType.METAL));
+        
+        // === EXIT ===
+        platforms.add(new Platform(880, 460, 120, 40, PlatformType.FLOOR));
 
-        // === SECOND SECTION ===
-        platforms.add(new Platform(320, 350, 64, 32, PlatformType.STONE));
-        platforms.add(new Platform(440, 300, 80, 32, PlatformType.METAL));
-        spikes.add(new Spike(470, 268, 32, 32, SpikeType.FIRE));
+        // === LAVA FLOOR - REDUCED ===
+        // Only 4 spikes instead of 18
+        spikes.add(new Spike(200, 568, 32, 32, SpikeType.FIRE));
+        spikes.add(new Spike(400, 568, 32, 32, SpikeType.FIRE));
+        spikes.add(new Spike(600, 568, 32, 32, SpikeType.FIRE));
+        spikes.add(new Spike(800, 568, 32, 32, SpikeType.FIRE));
+        
+        // === FACTORY POISON BOMBS - REMOVED ===
+        // All poison bombs removed for balance
 
-        // === THIRD SECTION ===
-        platforms.add(new Platform(560, 250, 64, 32, PlatformType.BRICK));
-        spikes.add(new Spike(590, 218, 32, 32, SpikeType.POISON));
-
-        // === TOP AREA ===
-        platforms.add(new Platform(680, 200, 80, 32, PlatformType.CRATE));
-        platforms.add(new Platform(780, 150, 100, 32, PlatformType.STONE));
-
-        // === DESCENDING SECTION ===
-        platforms.add(new Platform(700, 280, 64, 32, PlatformType.METAL));
-        spikes.add(new Spike(700, 248, 32, 32, SpikeType.ELECTRIC));
-
-        platforms.add(new Platform(620, 360, 80, 32, PlatformType.BRICK));
-        platforms.add(new Platform(540, 420, 64, 32, PlatformType.CRATE));
-        spikes.add(new Spike(540, 388, 32, 32, SpikeType.BONE));
-
-        platforms.add(new Platform(440, 470, 100, 32, PlatformType.FLOOR));
-        platforms.add(new Platform(340, 520, 100, 32, PlatformType.FLOOR));
-
-        // === FLOOR TRAPS ===
-        for (int i = 0; i < 18; i++) {
-            spikes.add(new Spike(i * 50, 568, 32, 32, SpikeType.ICE));
-        }
+        // === STARS ===
+        stars.add(new Star(195, 410, 32, 32));      // Star 1
+        stars.add(new Star(310, 380, 32, 32));      // Star 2
+        stars.add(new Star(430, 350, 32, 32));      // Star 3 - On moving platform
+        stars.add(new Star(385, 220, 32, 32));      // Star 4 - Upper factory
+        stars.add(new Star(520, 140, 32, 32));      // Star 5 - High platform
+        stars.add(new Star(650, 170, 32, 32));      // Star 6
+        stars.add(new Star(685, 320, 32, 32));      // Star 7 - Descent
 
         // === DOOR ===
-        door = new Door(350, 440, 50, 80);
+        door = new Door(930, 380, 50, 80);
+        
+        // ENHANCEMENT: Checkpoints for very hard level
+        checkpoints.add(new Checkpoint(480, 228, 470, 148)); // Mid factory
+        checkpoints.add(new Checkpoint(720, 248, 710, 248)); // Before furnace
+
         setImagesForObjects();
     }
 
     @Override
     public void update() {
         completed = false;
-
         Rectangle playerBounds = player.getBounds();
+
+        // Update moving platforms first
+        for (MovingPlatform mp : movingPlatforms) {
+            mp.update();
+        }
 
         // Platform collision - only when falling
         for (Platform platform : platforms) {
             if (player.getVelocityY() > 0) {
                 double playerBottom = player.getY() + Player.HEIGHT;
                 double playerBottomPrev = playerBottom - player.getVelocityY();
-
+                
                 boolean horizontalOverlap = player.getX() + Player.WIDTH > platform.getBounds().x &&
                                             player.getX() < platform.getBounds().x + platform.getBounds().width;
-
+                
                 if (horizontalOverlap &&
                     playerBottomPrev <= platform.getBounds().y &&
                     playerBottom >= platform.getBounds().y) {
-
+                    
                     player.setY(platform.getBounds().y - Player.HEIGHT);
                     player.setOnGround(true);
                     break;
@@ -95,35 +128,53 @@ public class Level8 extends Level {
             }
         }
 
-        // Spike collision
-        checkSpikeCollision();
+        // Moving platform collision
+        for (MovingPlatform mp : movingPlatforms) {
+            if (player.getVelocityY() > 0) {
+                double playerBottom = player.getY() + Player.HEIGHT;
+                double playerBottomPrev = playerBottom - player.getVelocityY();
+                
+                boolean horizontalOverlap = player.getX() + Player.WIDTH > mp.getBounds().x &&
+                                            player.getX() < mp.getBounds().x + mp.getBounds().width;
+                
+                if (horizontalOverlap &&
+                    playerBottomPrev <= mp.getBounds().y &&
+                    playerBottom >= mp.getBounds().y) {
+                    
+                    player.setY(mp.getBounds().y - Player.HEIGHT);
+                    player.setOnGround(true);
+                    
+                    // Move player with platform
+                    player.setX(player.getX() + mp.getDeltaX());
+                    player.setY(player.getY() + mp.getDeltaY());
+                    break;
+                }
+            }
+        }
 
-        // Star collection and door open
+        checkSpikeCollision();
         checkStarCollection();
         checkDoorOpen();
+        
+        // Update checkpoints
+        if (!checkpoints.isEmpty()) {
+            updateCheckpoints();
+        }
 
         // Door collision
-        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
-            // Door is closed, player cannot pass
-            // Push player back or prevent movement
-            player.setX(player.getX() - player.getVelocityX());
-            player.setY(player.getY() - player.getVelocityY());
-            stuckTimer++;
-            if (stuckTimer >= 300) { // 5 seconds at 60 FPS
-                // Reset level: reposition player to initial place with 0 stars collected
-                player.reset(spawnX, spawnY);
-                super.reset(); // Reset stars
-                stuckTimer = 0;
+        if (door != null) {
+            if (!door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+                // Push player back from closed door
+                player.setX(player.getX() - player.getVelocityX());
+                player.setY(player.getY() - player.getVelocityY());
+            } else if (door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
+                // Level completed when entering open door
+                completed = true;
             }
-        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
-            // Door is open, player can pass to next level
-            completed = true;
-        } else {
-            stuckTimer = 0; // Reset timer if not touching closed door
         }
 
         // Fall off screen
-        if (player.getY() > GameLoop.BASE_HEIGHT + 50) {
+        if (player.getY() > ScaleManager.BASE_HEIGHT + 50) {
             player.die();
         }
     }

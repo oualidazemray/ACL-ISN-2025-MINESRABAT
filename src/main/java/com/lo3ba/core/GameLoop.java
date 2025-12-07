@@ -2,17 +2,33 @@ package com.lo3ba.core;
 
 import com.lo3ba.levels.Level;
 import com.lo3ba.ui.GameUI;
-import com.lo3ba.ui.VictoryScreen;
+import com.lo3ba.ui.PauseMenu;
+import com.lo3ba.ui.LevelVictoryScreen;
+import com.lo3ba.ui.FinalVictoryScreen;
+import com.lo3ba.util.ResourceManager;
+import com.lo3ba.util.ScaleManager;
+import com.lo3ba.effects.ParticleSystem;
+import com.lo3ba.effects.CameraShake;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import javax.imageio.ImageIO;
 
-public class GameLoop extends JPanel {
+/**
+ * Main game loop class responsible for:
+ * - Thread management (start/stop game loop)
+ * - Game state coordination
+ * - Delegating rendering to GameRenderer
+ * - Delegating UI management to GameUIManager
+ * - Updating game logic
+ */
+public class GameLoop extends JPanel implements UICallbacks {
     public static final int BASE_WIDTH = 1000;
     public static final int BASE_HEIGHT = 600;
     private static final int FPS = 60;
@@ -23,14 +39,19 @@ public class GameLoop extends JPanel {
     private Player player;
     private LevelManager levelManager;
     private InputHandler inputHandler;
-    private GameUI gameUI;
-    private VictoryScreen victoryScreen;
+
+    // Enhancement systems
+    private ParticleSystem particleSystem;
+    private CameraShake cameraShake;
+    
+    // Rendering
+    private GameRenderer gameRenderer;
+    
+    // UI Management
+    private GameUIManager uiManager;
 
     private BufferedImage backgroundImg;
     private Font retroFont;
-
-    private boolean victoryScreenShown = false;
-    private boolean gameUIShown = false;
 
     private boolean debugOverlay = false; // Toggle with F3
 
@@ -49,7 +70,24 @@ public class GameLoop extends JPanel {
         setPreferredSize(new Dimension(BASE_WIDTH, BASE_HEIGHT));
         setBackground(new Color(135, 206, 235)); // Sky blue
         setFocusable(true);
-        setLayout(new BorderLayout());
+        setLayout(null); // Use absolute layout for overlays
+
+        // Initialize ScaleManager with base dimensions
+        ScaleManager.getInstance().updateDimensions(BASE_WIDTH, BASE_HEIGHT);
+
+        // Add component listener to handle window resizing
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                int newWidth = getWidth();
+                int newHeight = getHeight();
+                if (newWidth > 0 && newHeight > 0) {
+                    ScaleManager.getInstance().updateDimensions(newWidth, newHeight);
+                    updateUIBounds();
+                    repaint();
+                }
+            }
+        });
 
         loadFont();
         init(startLevel);
@@ -58,33 +96,30 @@ public class GameLoop extends JPanel {
     }
 
     private void loadFont() {
-        try {
-            InputStream is = getClass().getResourceAsStream("/fonts/PressStart2P-Regular.ttf");
-            if (is != null) {
-                retroFont = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(16f);
-            } else {
-                System.err.println("⚠ Font not found: /fonts/PressStart2P-Regular.ttf");
-                retroFont = new Font("Monospaced", Font.BOLD, 16);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            retroFont = new Font("Monospaced", Font.BOLD, 16);
-        }
+        retroFont = ResourceManager.loadFont("PressStart2P-Regular.ttf", 16f);
     }
 
     private void init(int startLevel) {
+        // Initialize enhancement systems
+        particleSystem = new ParticleSystem();
+        cameraShake = new CameraShake();
+        
         // Initialize at default position first
-        player = new Player(100, 400);
+        player = new Player(100, 400, this); // Pass GameLoop reference
         levelManager = new LevelManager(player, startLevel);
-        inputHandler = new InputHandler(player);
+        inputHandler = new InputHandler(player, levelManager);
 
-        // Key listener: send movement keys to inputHandler; F3 toggles debug overlay
+        // Key listener: send movement keys to inputHandler; F3 toggles debug; F/ESC toggles pause
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_F3) {
                     debugOverlay = !debugOverlay;
                     repaint();
+                    return;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_F || e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    togglePause();
                     return;
                 }
                 inputHandler.keyPressed(e);
@@ -103,80 +138,35 @@ public class GameLoop extends JPanel {
             System.err.println("⚠ Failed to load background image: assets/textures/background.png");
             e.printStackTrace();
         }
+        
+        // Initialize renderer
+        gameRenderer = new GameRenderer(retroFont, backgroundImg);
     }
 
+    /**
+     * Set up all UI screens using GameUIManager.
+     */
     private void setupUI() {
-        gameUI = new GameUI(this, BASE_WIDTH, BASE_HEIGHT, new GameUI.OnButtonClickListener() {
-            @Override
-            public void onRepeat() {
-                levelManager.resetCurrentLevel();
-                player.reset(levelManager.getCurrentLevel().getSpawnX(),
-                             levelManager.getCurrentLevel().getSpawnY());
-                hideGameUI();
-                requestFocusInWindow();
-            }
-
-            @Override
-            public void onQuit() {
-                stop();
-                if (onReturnToMenu != null) {
-                    onReturnToMenu.run();
-                } else {
-                    System.exit(0);
-                }
-            }
-
-            @Override
-            public void onHome() {
-                stop();
-                if (onReturnToMenu != null) {
-                    onReturnToMenu.run();
-                } else {
-                    System.exit(0);
-                }
-            }
-        });
-
-        victoryScreen = new VictoryScreen(new VictoryScreen.OnButtonClickListener() {
-            @Override
-            public void onNextLevel() {
-                // Advance to next level
-                levelManager.nextLevel();
-                player.reset(levelManager.getCurrentLevel().getSpawnX(),
-                             levelManager.getCurrentLevel().getSpawnY());
-                hideVictoryScreen();
-                requestFocusInWindow();
-            }
-
-            @Override
-            public void onRepeat() {
-                levelManager.resetCurrentLevel();
-                player.reset(levelManager.getCurrentLevel().getSpawnX(),
-                             levelManager.getCurrentLevel().getSpawnY());
-                hideVictoryScreen();
-                requestFocusInWindow();
-            }
-
-            @Override
-            public void onQuit() {
-                stop();
-                if (onReturnToMenu != null) {
-                    onReturnToMenu.run();
-                } else {
-                    System.exit(0);
-                }
-            }
-
-            @Override
-            public void onHome() {
-                stop();
-                if (onReturnToMenu != null) {
-                    onReturnToMenu.run();
-                } else {
-                    System.exit(0);
-                }
-            }
-        });
+        uiManager = new GameUIManager(this, this);
+        uiManager.setupUI();
+    }
+    
+    /**
+     * Update UI bounds when window is resized.
+     */
+    private void updateUIBounds() {
+        if (uiManager != null) {
+            uiManager.updateBounds();
+        }
+    }
+    
+    /**
+     * Toggle pause menu.
+     */
+    private void togglePause() {
+        if (uiManager != null) {
+            uiManager.togglePause();
+        }
     }
 
     // Start the game loop on a dedicated thread
@@ -249,21 +239,27 @@ public class GameLoop extends JPanel {
 
     // Game logic update kept off the EDT. UI changes are scheduled onto the EDT.
     private void updateGameLogic() {
+        // Skip update if game is paused
+        if (uiManager != null && uiManager.isPaused()) return;
+        
         if (!player.isDead()) {
             // Apply input state each frame
             inputHandler.updateMovement();
 
             player.update();
             levelManager.update();
+            
+            // ENHANCEMENT: Update particles and camera shake
+            particleSystem.update();
+            cameraShake.update();
+            
+            // ENHANCEMENT: Check for landing effects after collision detection
+            player.checkLandingEffects();
 
             Level currentLevel = levelManager.getCurrentLevel();
-            if (currentLevel != null && currentLevel.isCompleted() && !victoryScreenShown) {
-                // Call the callback to update unlocked levels on EDT
+            if (currentLevel != null && currentLevel.isCompleted() && !uiManager.isVictoryScreenShown()) {
+                // Use a brief delay before showing the victory screen on the EDT
                 SwingUtilities.invokeLater(() -> {
-                    if (onLevelComplete != null) {
-                        onLevelComplete.run();
-                    }
-                    // Use a brief delay before showing the victory screen on the EDT
                     Timer delayTimer = new Timer(500, e -> {
                         showVictoryScreen();
                         ((Timer)e.getSource()).stop();
@@ -271,9 +267,6 @@ public class GameLoop extends JPanel {
                     delayTimer.setRepeats(false);
                     delayTimer.start();
                 });
-
-                // Set flag immediately to avoid multiple triggers
-                victoryScreenShown = true;
             }
         } else {
             // Player died -> show game UI on EDT
@@ -282,141 +275,53 @@ public class GameLoop extends JPanel {
     }
 
     private void showVictoryScreen() {
-        if (!victoryScreenShown) {
-            victoryScreenShown = true;
-            add(victoryScreen, BorderLayout.CENTER);
-            victoryScreen.show();
-            revalidate();
-            repaint();
-        }
+        boolean isFinalLevel = levelManager.getCurrentLevelNumber() == 10;
+        Level current = levelManager.getCurrentLevel();
+        VictoryData data = new VictoryData(
+            current.getCollectedStars(),
+            current.getTotalStars(),
+            player.getDeathCount(),
+            null
+        );
+        uiManager.showVictoryScreen(isFinalLevel, data);
     }
 
     private void hideVictoryScreen() {
-        if (victoryScreenShown) {
-            victoryScreen.hide();
-            remove(victoryScreen);
-            victoryScreenShown = false;
-            revalidate();
-            repaint();
+        if (uiManager != null) {
+            uiManager.hideVictoryScreen();
         }
     }
 
     private void showGameUI() {
-        if (!gameUIShown) {
-            gameUIShown = true;
-            gameUI.show();
+        if (uiManager != null) {
+            uiManager.showGameUI();
         }
     }
 
     private void hideGameUI() {
-        if (gameUIShown) {
-            gameUI.hide();
-            gameUIShown = false;
+        if (uiManager != null) {
+            uiManager.hideGameUI();
         }
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g.create();
-
-        // Disable anti-aliasing for pixel-perfect retro look
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                             RenderingHints.VALUE_ANTIALIAS_OFF);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                             RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                             RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-
-        // Draw background image
-        if (backgroundImg != null) {
-            g2d.drawImage(backgroundImg, 0, 0, BASE_WIDTH, BASE_HEIGHT, null);
-        }
-
-        Level currentLevel = levelManager.getCurrentLevel();
-        if (currentLevel != null) {
-            currentLevel.render(g2d);
-        }
-
-        player.render(g2d);
-
-        // Draw UI with retro font
-        g2d.setFont(retroFont);
-
-        // Level indicator with shadow
-        g2d.setColor(Color.BLACK);
-        g2d.drawString("LEVEL: " + levelManager.getCurrentLevelNumber(), 12, 32);
-        g2d.setColor(new Color(255, 200, 0));
-        g2d.drawString("LEVEL: " + levelManager.getCurrentLevelNumber(), 10, 30);
-
-        // Deaths counter with shadow
-        g2d.setColor(Color.BLACK);
-        g2d.drawString("DEATHS: " + player.getDeathCount(), 12, 62);
-        g2d.setColor(new Color(255, 100, 100));
-        g2d.drawString("DEATHS: " + player.getDeathCount(), 10, 60);
-
-        // Stars counter with shadow
-        g2d.setColor(Color.BLACK);
-        g2d.drawString("STARS: " + levelManager.getCurrentLevel().getCollectedStars() + " / " + levelManager.getCurrentLevel().getTotalStars(), 12, 92);
-        g2d.setColor(Color.YELLOW);
-        g2d.drawString("STARS: " + levelManager.getCurrentLevel().getCollectedStars() + " / " + levelManager.getCurrentLevel().getTotalStars(), 10, 90);
-
-        // HP counter with shadow
-        g2d.setColor(Color.BLACK);
-        g2d.drawString("HP: " + player.getHealth(), 12, 112);
-        g2d.setColor(Color.GREEN);
-        g2d.drawString("HP: " + player.getHealth(), 10, 110);
-
-        // Stuck timer with shadow (only show if stuck)
-        int stuckTimer = levelManager.getCurrentLevel().getStuckTimer();
-        if (stuckTimer > 0) {
-            int remainingSeconds = (300 - stuckTimer) / 60 + 1; // Approximate remaining seconds
-            g2d.setColor(Color.BLACK);
-            g2d.drawString("STUCK: " + remainingSeconds + "s", 12, 122);
-            g2d.setColor(Color.RED);
-            g2d.drawString("STUCK: " + remainingSeconds + "s", 10, 120);
-        }
-
-        if (player.isDead()) {
-            // Draw "YOU DIED!" with retro style
-            Font bigFont = retroFont.deriveFont(32f);
-            g2d.setFont(bigFont);
-            String msg = "YOU DIED!";
-            FontMetrics fm = g2d.getFontMetrics();
-            int msgWidth = fm.stringWidth(msg);
-            int x = BASE_WIDTH / 2 - msgWidth / 2;
-            int y = BASE_HEIGHT / 2 - 20;
-
-            // Shadow
-            g2d.setColor(Color.BLACK);
-            g2d.drawString(msg, x + 3, y + 3);
-
-            // Main text with gradient effect
-            GradientPaint gp = new GradientPaint(
-                x, y - 20, new Color(255, 50, 0),
-                x, y + 10, new Color(200, 0, 0)
-            );
-            g2d.setPaint(gp);
-            g2d.drawString(msg, x, y);
-        }
-
-        // Debug overlay: draw player bounds and level collision visuals
-        if (debugOverlay && currentLevel != null) {
-            // Player bounds (magenta)
-            Rectangle pb = player.getBounds();
-            g2d.setColor(Color.MAGENTA);
-            g2d.drawRect(pb.x, pb.y, pb.width, pb.height);
-
-            // Ask level to draw its debug shapes
-            currentLevel.debugRender(g2d);
-
-            // small legend
-            g2d.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            g2d.setColor(Color.WHITE);
-            g2d.drawString("DEBUG: F3 toggles overlay", 12, BASE_HEIGHT - 10);
-        }
-
-        g2d.dispose();
+        
+        // Create rendering context
+        GameRenderContext context = new GameRenderContext(
+            player,
+            levelManager.getCurrentLevel(),
+            levelManager,
+            particleSystem,
+            cameraShake,
+            debugOverlay,
+            BASE_WIDTH,
+            BASE_HEIGHT
+        );
+        
+        // Delegate rendering to GameRenderer
+        gameRenderer.render(g, context);
     }
 
     // Public method to reset player position
@@ -443,5 +348,60 @@ public class GameLoop extends JPanel {
             return levelManager.getCurrentLevelNumber();
         }
         return 0;
+    }
+    
+    // ENHANCEMENT: Getters for particle system and camera shake
+    public ParticleSystem getParticleSystem() {
+        return particleSystem;
+    }
+    
+    public CameraShake getCameraShake() {
+        return cameraShake;
+    }
+    
+    // ========== UICallbacks Implementation ==========
+    
+    @Override
+    public void onLevelComplete() {
+        if (onLevelComplete != null) {
+            onLevelComplete.run();
+        }
+    }
+
+    @Override
+    public void onReturnToMenu() {
+        if (onReturnToMenu != null) {
+            onReturnToMenu.run();
+        } else {
+            System.exit(0);
+        }
+    }
+
+    @Override
+    public void onStopGame() {
+        stop();
+    }
+
+    @Override
+    public void onRepeatLevel() {
+        levelManager.resetCurrentLevel();
+        player.reset(levelManager.getCurrentLevel().getSpawnX(),
+                     levelManager.getCurrentLevel().getSpawnY());
+    }
+
+    @Override
+    public void onNextLevel() {
+        levelManager.nextLevel();
+    }
+
+    @Override
+    public void onTogglePause() {
+        // Pause state is managed by uiManager
+        // This is just a notification callback
+    }
+
+    @Override
+    public void onExit() {
+        System.exit(0);
     }
 }
