@@ -1,7 +1,7 @@
 package com.lo3ba.levels;
 
-import com.lo3ba.core.GameLoop;
 import com.lo3ba.core.Player;
+import com.lo3ba.util.ScaleManager;
 import com.lo3ba.gameobjects.Platform;
 import com.lo3ba.gameobjects.Platform.PlatformType;
 import com.lo3ba.gameobjects.Spike;
@@ -10,15 +10,19 @@ import com.lo3ba.gameobjects.Door;
 import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * LEVEL 3: PLATFORM PEAKS
+ * Theme: Vertical climb with precise platforming
+ * Difficulty: Medium
+ * Focus: Vertical platforming and longer jumps
+ */
 public class Level3 extends Level {
 
-      public Level3(Player player) {
+    public Level3(Player player) {
         super(player);
         spawnX = 50;
-        spawnY = 400;
+        spawnY = 500;
         init();
     }
 
@@ -28,129 +32,59 @@ public class Level3 extends Level {
         spikes.clear();
         stars.clear();
 
-      requiredStars = 5; // 2 stars to open door
+        requiredStars = 5;
 
-         // === THEME: "THE GAUNTLET" - Precision platforming with deadly floor ===
+        // === BASE FLOOR ===
+        platforms.add(new Platform(0, 550, 180, 50, PlatformType.FLOOR));
 
-        // === START SAFE ZONE ===
-        platforms.add(new Platform(0, 450, 140, 32, PlatformType.FLOOR));
+        // === ASCENDING PLATFORMS - LEFT SIDE ===
+        platforms.add(new Platform(50, 480, 80, 32, PlatformType.STONE));
+        platforms.add(new Platform(180, 410, 80, 32, PlatformType.CRATE));
+        platforms.add(new Platform(100, 340, 80, 32, PlatformType.BRICK));
+        platforms.add(new Platform(220, 270, 90, 32, PlatformType.METAL));
 
-        // === NARROW PILLAR PATH - Vertical challenge ===
-        platforms.add(new Platform(170, 400, 50, 32, PlatformType.STONE));
-        platforms.add(new Platform(250, 350, 50, 32, PlatformType.BRICK));
-        spikes.add(new Spike(265, 318, 32, 32, SpikeType.FIRE));
-        
-        platforms.add(new Platform(170, 280, 50, 32, PlatformType.METAL));
-        platforms.add(new Platform(250, 210, 50, 32, PlatformType.STONE));
-        
-        // === FLOATING ISLAND - High risk zone ===
-        platforms.add(new Platform(360, 160, 100, 32, PlatformType.CRATE));
-        spikes.add(new Spike(380, 128, 32, 32, SpikeType.ELECTRIC));
-        spikes.add(new Spike(420, 128, 32, 32, SpikeType.POISON));
+        // === TOP PLATFORM ===
+        platforms.add(new Platform(350, 180, 120, 32, PlatformType.STONE));
+        spikes.add(new Spike(380, 148, 32, 32, SpikeType.FIRE));
 
-        // === BRIDGE SECTION - Horizontal precision ===
-        platforms.add(new Platform(500, 200, 60, 32, PlatformType.BRICK));
-        platforms.add(new Platform(600, 180, 60, 32, PlatformType.METAL));
-        spikes.add(new Spike(615, 148, 32, 32, SpikeType.NORMAL));
-        
-        platforms.add(new Platform(700, 220, 70, 32, PlatformType.STONE));
+        // === DESCENDING PATH - RIGHT SIDE ===
+        platforms.add(new Platform(510, 230, 85, 32, PlatformType.CRATE));
+        platforms.add(new Platform(640, 290, 90, 32, PlatformType.BRICK));
+        platforms.add(new Platform(560, 360, 85, 32, PlatformType.STONE));
+        platforms.add(new Platform(680, 420, 100, 32, PlatformType.METAL));
 
-        // === DESCENT ZIGZAG - Controlled falling ===
-        platforms.add(new Platform(800, 280, 60, 32, PlatformType.BRICK));
-        spikes.add(new Spike(815, 248, 32, 32, SpikeType.BONE));
-        
-        platforms.add(new Platform(720, 340, 60, 32, PlatformType.CRATE));
-        platforms.add(new Platform(800, 400, 70, 32, PlatformType.METAL));
-        spikes.add(new Spike(820, 368, 32, 32, SpikeType.ELECTRIC));
+        // === FINAL ZONE ===
+        platforms.add(new Platform(550, 500, 200, 32, PlatformType.FLOOR));
 
-        // === FINAL STRETCH - Landing platforms ===
-        platforms.add(new Platform(680, 460, 80, 32, PlatformType.STONE));
-        platforms.add(new Platform(560, 500, 100, 32, PlatformType.FLOOR));
-        
-        // === DOOR PLATFORM ===
-        platforms.add(new Platform(420, 480, 100, 32, PlatformType.FLOOR));
-
-        // === DEADLY FLOOR - Complete coverage ===
-        for (int i = 0; i < 20; i++) {
-            spikes.add(new Spike(i * 50, 568, 32, 32, SpikeType.ICE));
+        // === HAZARDS ===
+        // Floor spikes with poison bombs mixed in
+        for (int i = 0; i < 8; i++) {
+            SpikeType type = (i == 2 || i == 5) ? SpikeType.POISON : SpikeType.ELECTRIC;
+            spikes.add(new Spike(180 + i * 35, 568, 32, 32, type));
         }
+        // Platform hazards
+        spikes.add(new Spike(200, 378, 32, 32, SpikeType.NORMAL));
+        spikes.add(new Spike(550, 468, 32, 32, SpikeType.BONE));
+        // Poison bombs on platforms
+        spikes.add(new Spike(125, 308, 32, 32, SpikeType.POISON));
+        spikes.add(new Spike(570, 328, 32, 32, SpikeType.POISON));
 
-        // === ADDITIONAL HAZARDS - Gap traps ===
-        spikes.add(new Spike(320, 538, 32, 32, SpikeType.POISON));
-        spikes.add(new Spike(360, 538, 32, 32, SpikeType.POISON));
-        spikes.add(new Spike(640, 538, 32, 32, SpikeType.FIRE));
-        spikes.add(new Spike(680, 538, 32, 32, SpikeType.FIRE));
+        // === STARS ===
+        stars.add(new Star(60, 440, 32, 32));       // Star 1 - First climb
+        stars.add(new Star(200, 370, 32, 32));      // Star 2 - Mid left
+        stars.add(new Star(250, 230, 32, 32));      // Star 3 - Upper left
+        stars.add(new Star(390, 140, 32, 32));      // Star 4 - Peak
+        stars.add(new Star(670, 250, 32, 32));      // Star 5 - Right descent
 
-        // === STARS - 8 stars for maximum challenge ===
-        stars.add(new Star(185, 360, 32, 32));      // Star 1 - First pillar
-        stars.add(new Star(185, 240, 32, 32));      // Star 2 - High pillar
-        stars.add(new Star(265, 170, 32, 32));      // Star 3 - Peak pillar
-        stars.add(new Star(370, 120, 32, 32));      // Star 4 - Floating island (left side, away from spikes)
-    
-        stars.add(new Star(600, 460, 32, 32));      // Star 8 - Final stretch
+        // === DOOR ===
+        door = new Door(650, 420, 50, 80);
 
-        // === DOOR - Requires all 8 stars ===
-        door = new Door(450, 400, 50, 80);
         setImagesForObjects();
     }
 
     @Override
     public void update() {
-        completed = false;
-
-        Rectangle playerBounds = player.getBounds();
-
-        // Platform collision - only when falling
-        for (Platform platform : platforms) {
-            if (player.getVelocityY() > 0) {
-                double playerBottom = player.getY() + Player.HEIGHT;
-                double playerBottomPrev = playerBottom - player.getVelocityY();
-
-                boolean horizontalOverlap = player.getX() + Player.WIDTH > platform.getBounds().x &&
-                                            player.getX() < platform.getBounds().x + platform.getBounds().width;
-
-                if (horizontalOverlap &&
-                    playerBottomPrev <= platform.getBounds().y &&
-                    playerBottom >= platform.getBounds().y) {
-
-                    player.setY(platform.getBounds().y - Player.HEIGHT);
-                    player.setOnGround(true);
-                    break;
-                }
-            }
-        }
-
-        // Spike collision
-        checkSpikeCollision();
-
-        // Star collection and door open
-        checkStarCollection();
-        checkDoorOpen();
-
-        // Door collision
-        if (door != null && !door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
-            // Door is closed, player cannot pass
-            // Push player back or prevent movement
-            player.setX(player.getX() - player.getVelocityX());
-            player.setY(player.getY() - player.getVelocityY());
-            stuckTimer++;
-            if (stuckTimer >= 300) { // 5 seconds at 60 FPS
-                // Reset level: reposition player to initial place with 0 stars collected
-                player.reset(spawnX, spawnY);
-                super.reset(); // Reset stars
-                stuckTimer = 0;
-            }
-        } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
-            // Door is open, player can pass to next level
-            completed = true;
-        } else {
-            stuckTimer = 0; // Reset timer if not touching closed door
-        }
-
-        // Fall off screen
-        if (player.getY() > GameLoop.BASE_HEIGHT + 50) {
-            player.die();
-        }
+        standardUpdate();
     }
 
     @Override
