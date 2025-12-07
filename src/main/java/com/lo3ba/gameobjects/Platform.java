@@ -1,13 +1,16 @@
 package com.lo3ba.gameobjects;
 
+import com.lo3ba.util.ResourceManager;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 
 public class Platform {
-    // Enum for different platform types
+    /**
+     * Enum representing different visual/material platform types.
+     * This determines the texture and visual appearance of the platform.
+     * For behavioral variations (moving, breakable), use subclasses like MovingPlatform.
+     */
     public enum PlatformType {
         FLOOR, STONE, CRATE, METAL, BRICK, ICE, LAVA
     }
@@ -36,58 +39,22 @@ public class Platform {
     private static BufferedImage lavaTexture;
 
     static {
-        try {
-            String basePath = "C:\\Users\\khalil\\Documents\\GitHub\\ACL-ISN-2025-MINESRABAT\\src\\main\\resources\\assets\\textures\\";
-            floorTexture = ImageIO.read(new File(basePath + "floor.png"));
-            
-            // Try to load additional textures (optional - will use fallback if not found)
-            try {
-                stoneTexture = ImageIO.read(new File(basePath + "platform_stone_64x32.png"));
-            } catch (IOException e) {
-                System.out.println("Stone texture not found, will use floor texture as fallback");
+        // Load textures using ResourceManager for proper classpath loading
+        floorTexture = ResourceManager.loadTexture("floor.png");
+        stoneTexture = ResourceManager.loadTexture("platform_stone_64x32.png");
+        crateTexture = ResourceManager.loadTexture("platform_crate_80x32.png");
+        metalTexture = ResourceManager.loadTexture("platform_metal_80x32.png");
+        brickTexture = ResourceManager.loadTexture("platform_brick_64x32.png");
+        iceTexture = ResourceManager.loadTexture("platform_ice_80x32.png");
+        lavaTexture = ResourceManager.loadTexture("platform_lava_64x32.png");
+        
+        // Verify the main floor texture has the correct dimensions
+        if (floorTexture != null) {
+            if (floorTexture.getWidth() != PLATFORM_WIDTH || floorTexture.getHeight() != PLATFORM_HEIGHT) {
+                System.err.println("⚠️ Warning: floor.png dimensions are " + 
+                    floorTexture.getWidth() + "x" + floorTexture.getHeight() + 
+                    " but expected " + PLATFORM_WIDTH + "x" + PLATFORM_HEIGHT);
             }
-            
-            try {
-                crateTexture = ImageIO.read(new File(basePath + "platform_crate_80x32.png"));
-            } catch (IOException e) {
-                System.out.println("Crate texture not found, will use floor texture as fallback");
-            }
-            
-            try {
-                metalTexture = ImageIO.read(new File(basePath + "platform_metal_80x32.png"));
-            } catch (IOException e) {
-                System.out.println("Metal texture not found, will use floor texture as fallback");
-            }
-            
-            try {
-                brickTexture = ImageIO.read(new File(basePath + "platform_brick_64x32.png"));
-            } catch (IOException e) {
-                System.out.println("Brick texture not found, will use floor texture as fallback");
-            }
-            
-            try {
-                iceTexture = ImageIO.read(new File(basePath + "platform_ice_80x32.png"));
-            } catch (IOException e) {
-                System.out.println("Ice texture not found, will use floor texture as fallback");
-            }
-            
-            try {
-                lavaTexture = ImageIO.read(new File(basePath + "platform_lava_64x32.png"));
-            } catch (IOException e) {
-                System.out.println("Lava texture not found, will use floor texture as fallback");
-            }
-            
-            // Verify the main floor texture has the correct dimensions
-            if (floorTexture != null) {
-                if (floorTexture.getWidth() != PLATFORM_WIDTH || floorTexture.getHeight() != PLATFORM_HEIGHT) {
-                    System.err.println("⚠️ Warning: floor.png dimensions are " + 
-                        floorTexture.getWidth() + "x" + floorTexture.getHeight() + 
-                        " but expected " + PLATFORM_WIDTH + "x" + PLATFORM_HEIGHT);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("⚠️ Failed to load floor texture. Using gray fallback.");
         }
     }
 
@@ -134,6 +101,11 @@ public class Platform {
     
     public int getHeight() { 
         return visualBounds.height; 
+    }
+
+    public void setPosition(int x, int y) {
+        visualBounds.setLocation(x, y);
+        collisionBounds.setLocation(x, y + COLLISION_TOP_MARGIN);
     }
 
     /**
