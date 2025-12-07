@@ -10,7 +10,7 @@ import com.lo3ba.gameobjects.Door;
 import com.lo3ba.gameobjects.Star;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.List;
 
 public class Level9 extends Level {
