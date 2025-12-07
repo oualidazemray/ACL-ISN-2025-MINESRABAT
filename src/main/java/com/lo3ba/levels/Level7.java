@@ -109,7 +109,7 @@ public class Level7 extends Level {
                 // Reset level: reposition player to initial place with 0 stars collected
                 player.reset(spawnX, spawnY);
                 super.reset(); // Reset stars
-                stuckTimer = 0;
+                stuckTimer = 0; 
             }
         } else if (door != null && door.isOpen() && checkCollision(playerBounds, door.getBounds())) {
             // Door is open, player can pass to next level
